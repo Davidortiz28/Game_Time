@@ -11,6 +11,8 @@
         .panel { padding: 2rem; border: 1px solid #374151; border-radius: 1rem; background: #1f2937; }
         .tag { color: #a7f3d0; font-size: .85rem; }
         p { color: #d1d5db; line-height: 1.6; }
+        form { margin-top: 1.5rem; }
+        button { padding: .65rem 1rem; border: 0; border-radius: .5rem; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -18,8 +20,13 @@
     <div class="panel">
         <div class="tag">PANEL LOCAL · PROTOTIPO</div>
         <h1>GameTime</h1>
-        <p>Base inicial del panel del administrador. La autenticación y la gestión de sesiones se añadirán en los siguientes incrementos.</p>
+        <p>Sesión iniciada como <strong th:text="${adminUsername}">admin</strong>.</p>
+        <p>La gestión de juegos y sesiones se añadirá en los siguientes incrementos.</p>
         <p>Backend Spring Boot · Thymeleaf · PostgreSQL + pgvector</p>
+        <form th:action="@{/logout}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <button type="submit">Cerrar sesión</button>
+        </form>
     </div>
 </main>
 </body>

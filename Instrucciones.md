@@ -52,6 +52,8 @@ Para el MVP habrá una sola cuenta administradora propia de GameTime. No se reut
 
 Un administrador de Windows controla el equipo y podrá mantener o restablecer GameTime. El límite de esta cuenta frente al jugador normal se aplica a través de los permisos de Windows y la autenticación propia de GameTime.
 
+La primera implementación incluye el formulario web, protección de rutas, límite progresivo de intentos, alta y restablecimiento desde consola elevada, y expiración de sesión. Para las instrucciones de ejecución consulta el `README.md`.
+
 ### Tecnología y almacenamiento
 
 - Java y Spring Boot para backend y API.
@@ -73,7 +75,7 @@ Un administrador de Windows controla el equipo y podrá mantener o restablecer G
 ## Pendientes
 
 1. Resolver el caso donde el juego ignora el cierre normal y queda abierto sin una nueva sesión aprobada.
-2. Implementar el alta inicial, inicio de sesión y recuperación de la cuenta administradora según la política anterior.
+2. Validar el flujo de autenticación en Windows con base de datos iniciada y cuenta creada.
 3. Definir qué ocurre con una sesión marcada como interrumpida.
 4. Definir los campos del CSV y cómo se entrega tras la aprobación.
 5. Validar el servicio Java y sus permisos.

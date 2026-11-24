@@ -65,6 +65,13 @@ Requisitos locales: JDK 25, Maven y Docker. Desde la raíz del repositorio, crea
 Después ejecuta:
 
     docker compose up -d
+
+La primera vez, abre PowerShell con **Ejecutar como administrador** y crea la cuenta GameTime (la contraseña se solicita de forma oculta):
+
+    mvn -pl backend -Padmin-setup exec:java "-Dexec.mainClass=com.gametime.backend.setup.AdminSetupCommand" "-Dexec.args=setup"
+
+Después inicia el panel normalmente:
+
     mvn -pl backend spring-boot:run
 
 La página inicial local queda en http://localhost:8080. El cliente JavaFX está en desktop-client y se puede iniciar con Maven desde esa carpeta:
@@ -73,4 +80,10 @@ La página inicial local queda en http://localhost:8080. El cliente JavaFX está
 
 El archivo `.env` está excluido de Git. No publiques ni compartas ese archivo. Usa contraseñas locales distintas y no las reutilices en una instalación compartida.
 
-Flyway aplica automáticamente la primera migración al iniciar el backend; esta crea el catálogo de juegos, sesiones y solicitudes de tiempo adicional. Todavía no están implementadas la autenticación, las pantallas de gestión, los temporizadores ni el control de juegos.
+Para restablecer la contraseña olvidada, detén primero el backend y, desde PowerShell elevado, ejecuta:
+
+    mvn -pl backend -Padmin-setup exec:java "-Dexec.mainClass=com.gametime.backend.setup.AdminSetupCommand" "-Dexec.args=reset-password"
+
+La herramienta exige permisos de administrador de Windows y conserva los datos. El inicio de sesión del panel usa una sola cuenta `admin`, hash Argon2id, demora progresiva tras errores, cookie HttpOnly y SameSite, protección CSRF, 15 minutos de inactividad y 8 horas de duración máxima.
+
+Flyway aplica las migraciones automáticamente; crean el catálogo de juegos, sesiones, solicitudes de tiempo adicional y la cuenta administradora. El acceso de administrador ya está protegido. Todavía no están implementadas las pantallas de gestión, los temporizadores ni el control de juegos.
