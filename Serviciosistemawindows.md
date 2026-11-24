@@ -163,3 +163,17 @@ El administrador puede finalizar una sesión desde la web local; la acción debe
 
 PostgreSQL con pgvector se ejecutará localmente mediante Docker en desarrollo. Para ampliar el sistema, primero se puede trasladar la misma base PostgreSQL/pgvector a un servidor. Sustituirla por otra base de datos debe revisarse frente al requisito de pgvector.
 
+
+
+## Solicitudes de sesión e interrupciones
+
+Cuando termina el temporizador, el jugador puede enviar una solicitud para otra sesión. El administrador decide si la acepta o rechaza; al aceptarla, crea e inicia manualmente el nuevo temporizador. La confirmación de finalizar una sesión evita terminarla por error.
+
+Si Windows se reinicia o falla la supervisión, la sesión se marca como interrumpida. La política para reanudarla queda pendiente.
+
+GameTime solo inicia y administra juegos lanzados desde su propio launcher. No se pretende bloquear Steam o Epic si el usuario los abre directamente en esta primera versión. La prueba de los títulos seleccionados se hará cuando el programa esté listo.
+
+## Acceso del administrador
+
+Para la primera versión se recomienda una contraseña propia de GameTime y mantener la sesión del administrador abierta mientras dure su uso, con confirmación para acciones importantes. No se implementará reconocimiento facial propio. Windows Hello podría evaluarse más adelante como mecanismo de autenticación del sistema.
+

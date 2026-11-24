@@ -6,10 +6,10 @@ GameTime será un sistema para organizar juegos y administrar sesiones con lími
 
 - El administrador crea una sesión y pulsa para iniciar el temporizador.
 - Cada sesión tiene un límite de tiempo; no hay un límite diario.
-- Mientras quede tiempo, el jugador puede cerrar un juego y abrir otro desde GameTime. El temporizador continúa y no requiere una nueva aprobación para cambiar de juego.
+- Mientras quede tiempo, el jugador puede cerrar un juego y abrir otro desde GameTime. El temporizador continúa sin reiniciarse.
 - Al llegar a cero, GameTime avisa y concede 30 segundos para guardar el progreso. Después, intenta cerrar el juego normalmente, sin forzarlo.
-- Si el juego ignora el cierre normal, puede permanecer abierto. Esto entra en conflicto con la regla de que no se puede jugar sin una nueva aprobación y queda pendiente de resolver.
-- Para iniciar otra sesión o volver a colocar el temporizador, se requiere aprobación del administrador. Hasta entonces GameTime no iniciará nuevos juegos.
+- Si el juego ignora el cierre normal, puede permanecer abierto. GameTime solo administra los juegos iniciados desde su propio launcher; no bloqueará Steam o Epic cuando se ejecuten por fuera.
+- Al terminar el tiempo, el jugador puede solicitar otra sesión. El administrador la aprueba o rechaza; si la aprueba, crea e inicia manualmente el nuevo temporizador. Sin aprobación, GameTime no inicia juegos nuevos.
 - El administrador puede terminar una sesión desde la página web, tras confirmar la acción.
 - No se apagará el equipo al finalizar una sesión.
 
@@ -18,6 +18,8 @@ La aplicación del jugador debe mantenerse en segundo plano hasta que el adminis
 ## Roles y datos
 
 El administrador de GameTime configura límites, gestiona sesiones y puede borrar datos. El jugador no puede cambiar límites ni borrar datos. El usuario podrá solicitar la exportación de sus datos en CSV; el administrador deberá aprobarla o rechazarla. Los campos del archivo quedan por definir.
+
+**Acceso del administrador — propuesta:** usar una contraseña propia de GameTime en la primera versión. Para reducir pasos, el administrador inicia sesión una vez y confirma las acciones importantes sin volver a introducir la contraseña en cada operación. La autenticación facial propia no se implementará. Windows Hello podría evaluarse en una versión futura.
 
 ## Arquitectura y tecnologías
 
@@ -30,6 +32,10 @@ El administrador de GameTime configura límites, gestiona sesiones y puede borra
 
 Para escalar en el futuro se puede alojar PostgreSQL/pgvector en un servidor. Cambiar a otra base de datos requeriría revisar el requisito de pgvector.
 
+## Fallos de sesión
+
+Si el equipo se reinicia o falla la supervisión durante una sesión, GameTime marcará la sesión como **interrumpida**. La política de recuperación o reanudación queda pendiente.
+
 ## IA y RAG
 
 La primera función propuesta es sugerir una categoría para cada juego usando su nombre y descripción. El administrador revisará y podrá aceptar o cambiar la propuesta. Los embeddings y pgvector pueden recuperar juegos o categorías parecidas; la IA no cambiará límites ni permisos. La lista de categorías, el proveedor de embeddings y el modelo generativo quedan para más adelante. GameTime trabajará con metadatos de juegos, no con PDF.
@@ -40,13 +46,13 @@ La primera función propuesta es sugerir una categoría para cada juego usando s
 - Phasmophobia — Steam.
 - Fortnite — Epic Games.
 
-La primera versión iniciará juegos agregados desde el launcher de GameTime. Hay que probar cómo se inicia y detecta cada juego mediante su plataforma. El soporte para otros launchers queda para una ampliación futura.
+El control de estos juegos se probará cuando el programa esté listo. El soporte para otros launchers queda para una ampliación futura.
 
 ## Pendiente antes de cerrar el diseño
 
-- Resolver qué pasa si un juego sigue abierto después de que no responde al cierre normal y no se ha aprobado otra sesión.
-- Definir la autenticación inicial del rol administrador y la recuperación de su cuenta.
-- Confirmar los ejecutables/rutas y el modo de inicio de los tres juegos.
+- Resolver qué pasa si un juego sigue abierto tras no responder al cierre normal.
+- Definir la autenticación inicial y recuperación de la cuenta administrador.
 - Definir los campos y el flujo de aprobación del CSV.
-- Validar servicio Java, permisos y recuperación de sesiones ante fallos o reinicios.
+- Definir qué ocurre con una sesión marcada como interrumpida.
+- Validar el servicio Java y sus permisos.
 
