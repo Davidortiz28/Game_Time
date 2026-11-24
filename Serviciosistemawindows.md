@@ -149,3 +149,17 @@ El usuario puede solicitar una exportación CSV y el administrador de GameTime l
 
 La primera función de IA propuesta es sugerir una categoría a partir del nombre y la descripción del juego. El administrador revisa la sugerencia. Los metadatos y embeddings se procesan desde Spring Boot y PostgreSQL/pgvector; la IA no modifica límites ni permisos.
 
+
+
+## Acuerdo actualizado sobre creación y aprobación de sesiones
+
+El administrador crea cada sesión e inicia el temporizador manualmente. Cada sesión tiene un límite de tiempo, sin límite diario. Mientras quede tiempo, el jugador puede cambiar de juego desde GameTime sin detener ni reiniciar el temporizador. Tras expirar, se requiere que el administrador apruebe y cree/inicie otra sesión antes de que GameTime lance nuevos juegos.
+
+El administrador puede finalizar una sesión desde la web local; la acción debe pedir confirmación. La primera lista de juegos de prueba es Left 4 Dead 2 y Phasmophobia (Steam), y Fortnite (Epic Games).
+
+**Caso pendiente:** si un juego ignora la solicitud de cierre normal tras la gracia de 30 segundos, GameTime no lo fuerza y el juego puede seguir activo. Esto no garantiza que el jugador deje de jugar hasta recibir aprobación para otra sesión. Debe elegirse una política compatible con el requisito antes de afirmar que el bloqueo se cumple.
+
+## Base de datos durante el desarrollo
+
+PostgreSQL con pgvector se ejecutará localmente mediante Docker en desarrollo. Para ampliar el sistema, primero se puede trasladar la misma base PostgreSQL/pgvector a un servidor. Sustituirla por otra base de datos debe revisarse frente al requisito de pgvector.
+

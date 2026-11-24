@@ -1,47 +1,52 @@
 ﻿# GameTime
 
-GameTime será un sistema para organizar juegos y administrar sesiones con límites establecidos por un administrador. En la primera versión, el administrador y el jugador usarán el mismo equipo, con permisos diferenciados. La administración remota desde otro dispositivo se considera para una futura versión.
+GameTime será un sistema para organizar juegos y administrar sesiones con límites establecidos por un administrador. En la primera versión, administrador y jugador usarán el mismo equipo, con permisos diferenciados. La administración desde otro dispositivo queda para una versión futura.
 
-## Cómo funcionará
+## Sesiones
 
-- El administrador define los límites desde una página web local.
-- El jugador inicia juegos desde la aplicación GameTime para Windows.
-- GameTime avisa cuando faltan 10 minutos, 5 minutos y 1 minuto.
-- Al llegar a cero, comienza un periodo de gracia de 30 segundos para guardar el progreso.
-- Después, GameTime intenta cerrar el juego normalmente. No lo fuerza; si el juego no responde, permanece abierto y se informa el resultado.
-- Si el jugador cierra un juego antes del límite, el temporizador sigue corriendo. Puede iniciar otro juego desde GameTime sin pedir una nueva autorización; el tiempo de la sesión continúa.
-- El administrador puede terminar la sesión desde la página web, pero debe confirmar la acción para evitar terminarla por error.
-- No se apagará el equipo al terminar una sesión.
+- El administrador crea una sesión y pulsa para iniciar el temporizador.
+- Cada sesión tiene un límite de tiempo; no hay un límite diario.
+- Mientras quede tiempo, el jugador puede cerrar un juego y abrir otro desde GameTime. El temporizador continúa y no requiere una nueva aprobación para cambiar de juego.
+- Al llegar a cero, GameTime avisa y concede 30 segundos para guardar el progreso. Después, intenta cerrar el juego normalmente, sin forzarlo.
+- Si el juego ignora el cierre normal, puede permanecer abierto. Esto entra en conflicto con la regla de que no se puede jugar sin una nueva aprobación y queda pendiente de resolver.
+- Para iniciar otra sesión o volver a colocar el temporizador, se requiere aprobación del administrador. Hasta entonces GameTime no iniciará nuevos juegos.
+- El administrador puede terminar una sesión desde la página web, tras confirmar la acción.
+- No se apagará el equipo al finalizar una sesión.
 
-La aplicación del jugador debe mantenerse en segundo plano hasta que el administrador finalice la sesión. El diseño contempla un servicio protegido de Windows. Una cuenta administradora de Windows será necesaria para instalarlo; el rol de administrador de GameTime será propio de la aplicación. La protección frente al cierre por una cuenta estándar debe comprobarse técnicamente.
+La aplicación del jugador debe mantenerse en segundo plano hasta que el administrador termine la sesión. El diseño contempla un servicio protegido de Windows, pendiente de validación técnica en Java. La cuenta administradora de Windows se necesita para instalarlo; el rol de administrador de GameTime es independiente.
 
 ## Roles y datos
 
-El **administrador de GameTime** configura límites, revisa sesiones, aprueba o rechaza solicitudes de exportación y puede borrar los datos. El **jugador** consulta el tiempo y juega dentro del límite; no puede cambiarlo ni borrar los datos.
-
-El jugador podrá solicitar una exportación en CSV. El administrador debe aprobarla antes de que se genere o entregue. Falta definir exactamente qué campos contendrá el archivo.
+El administrador de GameTime configura límites, gestiona sesiones y puede borrar datos. El jugador no puede cambiar límites ni borrar datos. El usuario podrá solicitar la exportación de sus datos en CSV; el administrador deberá aprobarla o rechazarla. Los campos del archivo quedan por definir.
 
 ## Arquitectura y tecnologías
 
-- **Página de administración:** web local implementada con Spring Boot y Thymeleaf.
-- **Backend:** Java con Spring Boot para autenticación, roles, límites, sesiones y comunicación entre componentes.
-- **Cliente del jugador:** aplicación JavaFX para Windows que inicia juegos, presenta avisos y comunica el estado de la sesión.
-- **Supervisor Windows:** componente Java separado, objetivo para mantener la supervisión en segundo plano hasta que el administrador termine la sesión. Apache Commons Daemon Procrun es una opción a validar para instalarlo como servicio.
-- **Base de datos:** PostgreSQL con pgvector para los datos del sistema y los vectores de búsqueda.
-- **Desarrollo local:** Docker puede ejecutar PostgreSQL con pgvector; no controla los juegos.
-- **Procesamiento asíncrono:** tareas para generar embeddings e indexar los metadatos de los juegos.
+- **Página de administración:** web local con Spring Boot y Thymeleaf.
+- **Backend:** Java con Spring Boot para autenticación, permisos, sesiones y comunicación entre componentes.
+- **Cliente del jugador:** aplicación JavaFX para Windows que inicia juegos, presenta avisos y comunica el estado.
+- **Supervisor de Windows:** componente Java separado; Apache Commons Daemon Procrun es una opción que debe probarse para ejecutarlo como servicio.
+- **Base de datos:** PostgreSQL con pgvector, ejecutado localmente mediante Docker durante el desarrollo.
+- **Procesamiento asíncrono:** tareas para indexar metadatos y generar embeddings. El cliente local no se conectará directamente a la base de datos.
 
-El cliente local no se conectará directamente a PostgreSQL; se comunicará con el backend, que valida los permisos. No se usará .NET. La integración Java con pgvector será Spring AI PgVectorStore o JDBC; Pgvector.EntityFrameworkCore es de .NET y no corresponde a este backend.
+Para escalar en el futuro se puede alojar PostgreSQL/pgvector en un servidor. Cambiar a otra base de datos requeriría revisar el requisito de pgvector.
 
 ## IA y RAG
 
-La primera función de IA propuesta es sugerir una categoría para cada juego según su nombre y descripción. El administrador revisará y podrá aceptar o cambiar la propuesta. La IA no determina límites ni permisos.
+La primera función propuesta es sugerir una categoría para cada juego usando su nombre y descripción. El administrador revisará y podrá aceptar o cambiar la propuesta. Los embeddings y pgvector pueden recuperar juegos o categorías parecidas; la IA no cambiará límites ni permisos. La lista de categorías, el proveedor de embeddings y el modelo generativo quedan para más adelante. GameTime trabajará con metadatos de juegos, no con PDF.
 
-Los embeddings y pgvector podrán buscar juegos o categorías similares. Si se implementa RAG, el modelo generará la sugerencia usando esos resultados como contexto. El proveedor de embeddings y el modelo generativo quedan por elegir. GameTime usará metadatos de juegos; no procesará PDF.
+## Juegos iniciales para pruebas
 
-## Alcance inicial y pendientes
+- Left 4 Dead 2 — Steam.
+- Phasmophobia — Steam.
+- Fortnite — Epic Games.
 
-La primera versión se limitará a juegos agregados e iniciados desde GameTime. El usuario aportará algunos juegos para probar. Se definirán sus ejecutables y los criterios de prueba antes de implementar el control de procesos.
+La primera versión iniciará juegos agregados desde el launcher de GameTime. Hay que probar cómo se inicia y detecta cada juego mediante su plataforma. El soporte para otros launchers queda para una ampliación futura.
 
-Quedan por resolver la autenticación concreta del rol de administrador, la lista inicial de juegos y categorías, los campos del CSV y el comportamiento si hay un reinicio o falla el servicio durante una sesión. También se debe validar el servicio Java, sus permisos y la comunicación entre el supervisor y la aplicación JavaFX.
+## Pendiente antes de cerrar el diseño
+
+- Resolver qué pasa si un juego sigue abierto después de que no responde al cierre normal y no se ha aprobado otra sesión.
+- Definir la autenticación inicial del rol administrador y la recuperación de su cuenta.
+- Confirmar los ejecutables/rutas y el modo de inicio de los tres juegos.
+- Definir los campos y el flujo de aprobación del CSV.
+- Validar servicio Java, permisos y recuperación de sesiones ante fallos o reinicios.
 

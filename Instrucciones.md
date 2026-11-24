@@ -1,57 +1,64 @@
 ﻿# Instrucciones del proyecto GameTime
 
-Este documento registra los acuerdos para la primera versión y los asuntos pendientes.
+Este documento registra los acuerdos de la primera versión y los asuntos pendientes.
 
 ## Decisiones acordadas
 
 ### Equipo y roles
 
-- Administrador y jugador usarán el mismo equipo en la primera versión.
-- El administrador gestionará la aplicación desde una página web local.
-- El jugador usará una aplicación JavaFX en Windows.
-- GameTime tendrá su propio rol de administrador, separado de la cuenta administradora de Windows.
-- La cuenta administradora de Windows se usará para instalar y proteger el servicio.
-- Administrar GameTime desde otro dispositivo queda para una futura versión.
+- Administrador y jugador usarán el mismo equipo.
+- El administrador usará una página web local; el jugador, una aplicación JavaFX para Windows.
+- GameTime tendrá su propio rol administrador, independiente del administrador de Windows.
+- La cuenta administradora de Windows se necesita para instalar y proteger el servicio.
+- Administrar GameTime desde otro dispositivo queda para una versión futura.
 
 ### Sesiones y juegos
 
-- Solo el administrador de GameTime puede definir o cambiar los límites.
-- Avisos al faltar 10 minutos, 5 minutos, 1 minuto y al llegar a cero.
-- Al llegar a cero, 30 segundos de gracia para guardar el progreso.
-- Después, GameTime intenta cerrar el juego normalmente y no lo fuerza. Si el juego no responde, queda abierto y el resultado se registra e informa.
-- Si el jugador cierra un juego antes del límite, el temporizador sigue corriendo. Puede iniciar otro juego desde GameTime sin una autorización adicional; el tiempo restante no se reinicia.
-- En la primera versión se controlan solo juegos agregados e iniciados desde GameTime.
-- El administrador puede terminar una sesión desde la página web, pero debe confirmar la acción antes de ejecutarla.
-- No apagar el equipo al terminar la sesión.
+- El administrador crea una sesión y comienza el temporizador manualmente.
+- Cada sesión tiene un límite de tiempo; no se aplicará un límite diario.
+- Mientras la sesión tenga tiempo restante, el jugador podrá cerrar un juego y abrir otro desde GameTime; el temporizador continúa sin reiniciarse ni requerir otra aprobación.
+- Avisos a los 10, 5 y 1 minuto, y al llegar a cero.
+- Al llegar a cero, hay 30 segundos de gracia; después se solicita el cierre normal del juego. No se fuerza el cierre.
+- Si el juego no responde, puede quedar abierto. Esto debe resolverse porque el requisito es que el jugador no pueda seguir jugando sin otra aprobación.
+- Para otra sesión o para volver a colocar el temporizador hace falta aprobación del administrador. Hasta que el administrador la dé, GameTime no inicia nuevos juegos.
+- El administrador puede finalizar una sesión desde la página web, después de confirmar la acción.
+- No apagar el equipo al terminar una sesión.
+- El jugador inicia juegos desde el launcher de GameTime; otros launchers no se soportan inicialmente.
 
-### Ejecución en segundo plano
+### Juegos para pruebas
 
-La aplicación del jugador debe mantenerse en segundo plano hasta que el administrador termine la sesión desde la página web. El diseño contempla un servicio Windows protegido, pendiente de una prueba técnica en Java y de validar sus permisos. La cuenta estándar no debería poder detenerlo; el administrador de Windows sí puede administrarlo.
+- Left 4 Dead 2 — Steam.
+- Phasmophobia — Steam.
+- Fortnite — Epic Games.
 
-### Tecnología y datos
+Hay que registrar sus rutas/ejecutables y comprobar cómo se inicia y detecta cada uno a través de su plataforma.
 
-- Backend Java/Spring Boot.
-- Página web local con Spring Boot y Thymeleaf.
-- Aplicación local del jugador con JavaFX.
-- PostgreSQL con pgvector.
-- Docker para levantar PostgreSQL/pgvector durante el desarrollo.
-- Integración Java con pgvector mediante Spring AI PgVectorStore o JDBC; no se usará Pgvector.EntityFrameworkCore ni .NET.
+### Tecnología y almacenamiento
+
+- Java y Spring Boot para backend y API.
+- Spring Boot con Thymeleaf para la página local de administración.
+- JavaFX para la aplicación del jugador.
+- PostgreSQL con pgvector mediante Docker en desarrollo local.
+- Spring AI PgVectorStore o JDBC como integración Java. No usar Pgvector.EntityFrameworkCore ni .NET.
 - Procesamiento asíncrono para indexar metadatos y generar embeddings.
-- El cliente local accede a datos a través del backend y no se conecta directamente a PostgreSQL.
-- La IA propone una categoría a partir del nombre y la descripción del juego. El administrador revisa, acepta o modifica la propuesta. El modelo y proveedor quedan por elegir.
-- El usuario puede solicitar sus datos en CSV; el administrador debe aprobar o rechazar la solicitud.
+- A futuro se puede alojar PostgreSQL/pgvector en un servidor; sustituirlo por otra base de datos requiere revisar el requisito de pgvector.
+
+### IA y datos
+
+- Primera función IA propuesta: sugerir una categoría a partir del nombre y descripción del juego; el administrador la revisa y puede cambiarla.
+- La IA no establece límites ni permisos.
+- La lista de categorías, el proveedor de embeddings y el modelo quedan para después.
+- El usuario podrá solicitar una exportación CSV, que el administrador aprobará o rechazará.
 - Solo el administrador puede borrar los datos de GameTime.
 
-## Pendientes antes de cerrar el diseño inicial
+## Pendientes
 
-1. Definir cómo inicia sesión el administrador de GameTime y cómo se protege su cuenta.
-2. Elegir los juegos que se probarán; el usuario proporcionará algunos.
-3. Definir la lista inicial de categorías.
-4. Especificar qué columnas tendrá el CSV y cómo se entrega tras la aprobación.
-5. Probar el servicio Java, su instalación, sus permisos y la comunicación con JavaFX.
-6. Decidir cómo se recupera el temporizador tras reinicio, apagado o fallo del servicio.
-7. Definir qué hacer si el jugador cierra sesión en Windows mientras la sesión sigue activa.
-8. Redactar criterios de aceptación para los flujos de administrador y jugador.
+1. Resolver el caso donde el juego ignora el cierre normal tras los 30 segundos y queda abierto sin una nueva sesión aprobada.
+2. Definir cómo se crea la cuenta de administrador y se recupera su acceso.
+3. Confirmar las rutas y el mecanismo de inicio de los juegos de prueba.
+4. Definir los campos del CSV y cómo se entrega tras la aprobación.
+5. Validar el servicio Java, sus permisos y la recuperación tras reinicio o fallo.
+6. Acordar los criterios de aceptación de los flujos principales.
 
-La futura administración desde otro dispositivo y el soporte para otros launchers quedan fuera de la primera versión.
+La administración remota, el límite diario, el soporte de más launchers y el proveedor concreto de IA quedan fuera de las primeras decisiones de implementación.
 
