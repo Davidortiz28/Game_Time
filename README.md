@@ -1,4 +1,4 @@
-﻿# GameTime
+# GameTime
 
 GameTime será un sistema para organizar juegos y administrar sesiones con límites establecidos por un administrador. En la primera versión, administrador y jugador usarán el mismo equipo, con permisos diferenciados. La administración desde otro dispositivo queda para una versión futura.
 
@@ -56,3 +56,21 @@ El control de estos juegos se probará cuando el programa esté listo. El soport
 - Definir qué ocurre con una sesión marcada como interrumpida.
 - Validar el servicio Java y sus permisos.
 
+## Ejecutar la base de datos en desarrollo
+
+Requisitos locales: JDK 25, Maven y Docker. Desde la raíz del repositorio, crea el archivo local de variables y completa sus contraseñas:
+
+    Copy-Item .env.example .env
+
+Después ejecuta:
+
+    docker compose up -d
+    mvn -pl backend spring-boot:run
+
+La página inicial local queda en http://localhost:8080. El cliente JavaFX está en desktop-client y se puede iniciar con Maven desde esa carpeta:
+
+    mvn javafx:run
+
+El archivo `.env` está excluido de Git. No publiques ni compartas ese archivo. Usa contraseñas locales distintas y no las reutilices en una instalación compartida.
+
+Este primer esqueleto todavía no implementa autenticación, sesiones, temporizadores ni control de juegos. Separa los módulos y crea la conexión de desarrollo con PostgreSQL/pgvector.

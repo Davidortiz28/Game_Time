@@ -1,0 +1,20 @@
+# Maven
+**/target/
+
+# Java and IDEs
+*.class
+.idea/
+.vscode/
+.settings/
+.project
+.classpath
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+
+# Application data and logs
+data/
+logs/
+*.log
