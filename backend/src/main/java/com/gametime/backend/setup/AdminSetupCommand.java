@@ -51,7 +51,7 @@ public final class AdminSetupCommand {
         }
 
         Properties properties = readLocalConfiguration();
-        String url = setting("DB_URL", properties, "jdbc:postgresql://localhost:5432/gametime");
+        String url = setting("DB_URL", properties, "jdbc:postgresql://localhost:5433/gametime");
         String username = setting("DB_USER", properties, "gametime_app");
         String databasePassword = setting("DB_PASSWORD", properties, "");
         if (databasePassword.isBlank()) {
