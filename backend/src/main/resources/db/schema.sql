@@ -1,1 +1,0 @@
--- Application tables and migrations will be added here after the session model is finalized.

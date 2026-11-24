@@ -73,4 +73,4 @@ La página inicial local queda en http://localhost:8080. El cliente JavaFX está
 
 El archivo `.env` está excluido de Git. No publiques ni compartas ese archivo. Usa contraseñas locales distintas y no las reutilices en una instalación compartida.
 
-Este primer esqueleto todavía no implementa autenticación, sesiones, temporizadores ni control de juegos. Separa los módulos y crea la conexión de desarrollo con PostgreSQL/pgvector.
+Flyway aplica automáticamente la primera migración al iniciar el backend; esta crea el catálogo de juegos, sesiones y solicitudes de tiempo adicional. Todavía no están implementadas la autenticación, las pantallas de gestión, los temporizadores ni el control de juegos.
