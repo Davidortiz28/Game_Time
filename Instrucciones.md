@@ -39,7 +39,18 @@ El usuario quiere probarlos cuando el programa esté listo. Antes habrá que reg
 
 ### Autenticación del administrador
 
-Se recomienda contraseña propia de GameTime para la primera versión, con inicio de sesión que no obligue a repetirla en cada operación y confirmación para acciones importantes. El reconocimiento facial implementado por GameTime queda fuera del alcance inicial. Windows Hello puede evaluarse más adelante como autenticación del sistema.
+Para el MVP habrá una sola cuenta administradora propia de GameTime. No se reutilizará la cuenta de Windows ni habrá credenciales predeterminadas.
+
+- **Alta inicial:** la cuenta se crea durante la instalación o mediante una herramienta de configuración ejecutada con permisos de administrador de Windows. La página web no ofrecerá un alta abierta que otro usuario local pueda reclamar primero.
+- **Contraseña:** mínimo de 15 caracteres y máximo de al menos 64; se permiten frases largas, espacios y caracteres Unicode, sin reglas obligatorias de mayúsculas o símbolos. Se almacenará únicamente un hash Argon2id con sal, nunca la contraseña en texto plano. Este mínimo sigue la recomendación de OWASP para contraseñas sin MFA; el ajuste del hash se validará en el equipo objetivo. [OWASP: Password Storage](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html) y [OWASP: Authentication](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html).
+- **Inicio de sesión:** la página del administrador solo escuchará en el equipo local. Tras iniciar sesión, se usará una sesión de servidor con cookie protegida; la autorización se comprobará en el backend, no solo ocultando botones. Se aplicará protección CSRF.
+- **Duración:** cerrar sesión manualmente o expirar tras 15 minutos de inactividad o 8 horas desde el inicio, lo que ocurra primero. Los tiempos se validan en el servidor. OWASP recomienda límites de inactividad y absolutos para las sesiones. [OWASP: Session Management](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html).
+- **Acciones sensibles:** terminar una sesión, borrar datos y aprobar una exportación requerirán una confirmación visible. No se pedirá la contraseña de nuevo en cada acción.
+- **Intentos fallidos:** limitar los intentos de contraseña con esperas progresivas y registrar eventos de acceso, sin guardar contraseñas ni bloquear la cuenta permanentemente por errores.
+- **Recuperación:** solo un administrador de Windows podrá iniciar el restablecimiento mediante una herramienta local protegida. El restablecimiento invalidará las sesiones web y conservará los datos de GameTime.
+- **Fuera del MVP:** varios administradores, autenticación facial y Windows Hello.
+
+Un administrador de Windows controla el equipo y podrá mantener o restablecer GameTime. El límite de esta cuenta frente al jugador normal se aplica a través de los permisos de Windows y la autenticación propia de GameTime.
 
 ### Tecnología y almacenamiento
 
@@ -62,7 +73,7 @@ Se recomienda contraseña propia de GameTime para la primera versión, con inici
 ## Pendientes
 
 1. Resolver el caso donde el juego ignora el cierre normal y queda abierto sin una nueva sesión aprobada.
-2. Definir cómo se crea y recupera la cuenta de administrador.
+2. Implementar el alta inicial, inicio de sesión y recuperación de la cuenta administradora según la política anterior.
 3. Definir qué ocurre con una sesión marcada como interrumpida.
 4. Definir los campos del CSV y cómo se entrega tras la aprobación.
 5. Validar el servicio Java y sus permisos.

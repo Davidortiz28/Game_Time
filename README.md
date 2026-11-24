@@ -19,7 +19,7 @@ La aplicación del jugador debe mantenerse en segundo plano hasta que el adminis
 
 El administrador de GameTime configura límites, gestiona sesiones y puede borrar datos. El jugador no puede cambiar límites ni borrar datos. El usuario podrá solicitar la exportación de sus datos en CSV; el administrador deberá aprobarla o rechazarla. Los campos del archivo quedan por definir.
 
-**Acceso del administrador — propuesta:** usar una contraseña propia de GameTime en la primera versión. Para reducir pasos, el administrador inicia sesión una vez y confirma las acciones importantes sin volver a introducir la contraseña en cada operación. La autenticación facial propia no se implementará. Windows Hello podría evaluarse en una versión futura.
+**Acceso del administrador para el MVP:** habrá una única cuenta de GameTime, creada durante la instalación o por una herramienta local ejecutada como administrador de Windows; no habrá contraseña predeterminada ni alta abierta desde la web. La contraseña se guardará con Argon2id. El panel local requerirá iniciar sesión y tendrá expiración por inactividad y tiempo máximo; las acciones sensibles pedirán confirmación, sin solicitar la contraseña en cada acción. El restablecimiento requerirá permisos de administrador de Windows y conservará los datos. La autenticación facial y Windows Hello quedan para el futuro. La política completa está en [Instrucciones.md](Instrucciones.md).
 
 ## Arquitectura y tecnologías
 
@@ -51,7 +51,7 @@ El control de estos juegos se probará cuando el programa esté listo. El soport
 ## Pendiente antes de cerrar el diseño
 
 - Resolver qué pasa si un juego sigue abierto tras no responder al cierre normal.
-- Definir la autenticación inicial y recuperación de la cuenta administrador.
+- Implementar la autenticación inicial y recuperación del administrador según la política de [Instrucciones.md](Instrucciones.md).
 - Definir los campos y el flujo de aprobación del CSV.
 - Definir qué ocurre con una sesión marcada como interrumpida.
 - Validar el servicio Java y sus permisos.
