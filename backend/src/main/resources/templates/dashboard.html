@@ -6,6 +6,12 @@
 <main>
     <div th:replace="~{fragments/layout :: flash}"></div>
 
+    <section class="panel" th:if="${launchableGames == 0}">
+        <h2>Sin juegos disponibles</h2>
+        <p class="muted">No hay juegos habilitados y aprobados para supervisión. El jugador no podrá iniciar juegos hasta que apruebes al menos uno en la biblioteca.</p>
+        <a class="button" th:href="@{/games}">Revisar biblioteca</a>
+    </section>
+
     <div class="grid">
         <!-- Sesión actual -->
         <section class="panel">
@@ -13,9 +19,6 @@
 
             <div th:if="${openSession == null}">
                 <p class="muted">No hay ninguna sesión abierta. El jugador no puede iniciar juegos.</p>
-                <p class="muted small" th:if="${enabledGames == 0}">
-                    Aún no hay juegos activos. <a th:href="@{/games/new}">Agrega uno</a> antes de crear la sesión.
-                </p>
                 <form th:action="@{/sessions}" method="post">
                     <div class="row">
                         <div class="grow">

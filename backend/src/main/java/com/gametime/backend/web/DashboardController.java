@@ -45,7 +45,7 @@ public class DashboardController {
         model.addAttribute("pendingExportRequest", exports.findPending().orElse(null));
         model.addAttribute("recentExportRequests", exports.findRecent(5));
         model.addAttribute("recentSessions", recent);
-        model.addAttribute("enabledGames", games.findEnabled().size());
+        model.addAttribute("launchableGames", games.countLaunchable());
         model.addAttribute("minMinutes", SessionService.MIN_MINUTES);
         model.addAttribute("maxMinutes", SessionService.MAX_MINUTES);
         return "dashboard";

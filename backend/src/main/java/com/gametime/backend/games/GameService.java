@@ -40,6 +40,12 @@ public class GameService {
                 .list();
     }
 
+    public long countLaunchable() {
+        return jdbc.sql("SELECT COUNT(*) FROM games WHERE enabled AND process_supervision_approved")
+                .query(Long.class)
+                .single();
+    }
+
     public Optional<Game> findById(long id) {
         return jdbc.sql("SELECT " + COLUMNS + " FROM games WHERE id = :id")
                 .param("id", id)
