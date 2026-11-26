@@ -9,5 +9,6 @@ public record Game(
         String processName,
         String category,
         String description,
-        boolean enabled) {
+        boolean enabled,
+        boolean processSupervisionApproved) {
 }

@@ -39,6 +39,7 @@ public class ClientGamesController {
 
     @PostMapping
     public ResponseEntity<Game> create(@Valid @RequestBody GameForm form) {
+        form.setProcessSupervisionApproved(false);
         long id = games.create(form);
         Game created = games.findById(id).orElseThrow();
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
@@ -46,6 +47,7 @@ public class ClientGamesController {
 
     @PutMapping("/{id}")
     public Game update(@PathVariable long id, @Valid @RequestBody GameForm form) {
+        form.setProcessSupervisionApproved(false);
         games.update(id, form);
         return games.findById(id).orElseThrow();
     }

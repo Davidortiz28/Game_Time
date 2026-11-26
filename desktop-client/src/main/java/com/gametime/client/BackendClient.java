@@ -184,16 +184,19 @@ final class BackendClient {
         }
     }
 
-    record GameView(long id, String name, String launcher, String category, boolean enabled) {
+    record GameView(long id, String name, String launcher, String category, boolean enabled,
+            boolean processSupervisionApproved) {
         @Override
         public String toString() {
             String details = category == null ? name + "  ·  " + launcher : name + "  ·  " + launcher + "  ·  " + category;
-            return enabled ? details : details + "  ·  Desactivado";
+            if (!enabled) return details + "  ·  Desactivado";
+            return processSupervisionApproved ? details : details + "  ·  Pendiente de aprobación";
         }
     }
 
     record GameCatalogView(long id, String name, String launcher, String launchTarget,
-            String launchArguments, String processName, String category, String description, boolean enabled) {
+            String launchArguments, String processName, String category, String description, boolean enabled,
+            boolean processSupervisionApproved) {
     }
 
     record GameInput(String name, String launcher, String launchTarget, String launchArguments,

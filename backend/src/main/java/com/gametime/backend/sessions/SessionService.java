@@ -305,8 +305,9 @@ public class SessionService {
             throw new BusinessRuleException("No hay una sesión activa con tiempo disponible.");
         }
         Game game = games.findById(gameId)
-                .filter(Game::enabled)
-                .orElseThrow(() -> new BusinessRuleException("El juego no existe o está desactivado."));
+                .filter(candidate -> candidate.enabled() && candidate.processSupervisionApproved())
+                .orElseThrow(() -> new BusinessRuleException(
+                        "El juego no existe, está desactivado o aún no fue aprobado por el administrador para supervisión."));
 
         long launchId = jdbc.sql("""
                         INSERT INTO game_launches (session_id, game_id, game_name, process_name)

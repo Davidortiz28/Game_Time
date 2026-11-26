@@ -34,6 +34,8 @@ public class GameForm {
 
     private boolean enabled = true;
 
+    private boolean processSupervisionApproved;
+
     public static GameForm from(Game game) {
         GameForm form = new GameForm();
         form.name = game.name();
@@ -44,6 +46,7 @@ public class GameForm {
         form.category = game.category();
         form.description = game.description();
         form.enabled = game.enabled();
+        form.processSupervisionApproved = game.processSupervisionApproved();
         return form;
     }
 
@@ -63,4 +66,6 @@ public class GameForm {
     public void setDescription(String description) { this.description = description; }
     public boolean isEnabled() { return enabled; }
     public void setEnabled(boolean enabled) { this.enabled = enabled; }
+    public boolean isProcessSupervisionApproved() { return processSupervisionApproved; }
+    public void setProcessSupervisionApproved(boolean approved) { this.processSupervisionApproved = approved; }
 }

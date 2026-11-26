@@ -45,8 +45,14 @@
 
             <label for="processName">Proceso del juego</label>
             <input id="processName" type="text" th:field="*{processName}" maxlength="260" required placeholder="left4dead2.exe">
-            <div class="hint">Nombre del .exe que aparece en el Administrador de tareas mientras juegas. GameTime lo vigila y le pide cerrar al terminar el tiempo.</div>
+            <div class="hint">Nombre del .exe que aparece en el Administrador de tareas. El jugador puede proponerlo, pero el administrador debe aprobarlo antes de que el servicio pueda supervisarlo.</div>
             <div class="field-error" th:if="${#fields.hasErrors('processName')}" th:errors="*{processName}"></div>
+
+            <label class="inline">
+                <input type="checkbox" th:field="*{processSupervisionApproved}">
+                Aprobar este proceso para la supervisión de GameTime
+            </label>
+            <div class="hint">Al aprobarlo, el servicio de Windows ejecutado como LocalSystem podrá solicitar el cierre normal de este proceso al terminar la sesión. Verifica el nombre del .exe antes de marcarlo.</div>
 
             <label for="category">Categoría (opcional)</label>
             <input id="category" type="text" th:field="*{category}" maxlength="100" placeholder="Cooperativo, terror, battle royale…">

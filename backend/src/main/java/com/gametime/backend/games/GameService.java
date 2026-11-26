@@ -19,7 +19,8 @@ import com.gametime.backend.common.BusinessRuleException;
 public class GameService {
 
     private static final String COLUMNS =
-            "id, name, launcher, executable_path, launch_arguments, process_name, category, description, enabled";
+            "id, name, launcher, executable_path, launch_arguments, process_name, category, description, enabled, "
+                    + "process_supervision_approved";
 
     private final JdbcClient jdbc;
 
@@ -52,8 +53,8 @@ public class GameService {
         try {
             return jdbc.sql("""
                     INSERT INTO games (name, launcher, executable_path, launch_arguments, process_name,
-                                       category, description, enabled)
-                    VALUES (:name, :launcher, :target, :args, :process, :category, :description, :enabled)
+                                       category, description, enabled, process_supervision_approved)
+                    VALUES (:name, :launcher, :target, :args, :process, :category, :description, :enabled, :supervisionApproved)
                     RETURNING id
                     """)
                     .paramSource(params(form))
@@ -73,7 +74,8 @@ public class GameService {
                     UPDATE games
                     SET name = :name, launcher = :launcher, executable_path = :target,
                         launch_arguments = :args, process_name = :process, category = :category,
-                        description = :description, enabled = :enabled, updated_at = CURRENT_TIMESTAMP
+                        description = :description, enabled = :enabled,
+                        process_supervision_approved = :supervisionApproved, updated_at = CURRENT_TIMESTAMP
                     WHERE id = :id
                     """)
                     .paramSource(params)
@@ -136,7 +138,8 @@ public class GameService {
                 .addValue("process", form.getProcessName())
                 .addValue("category", blankToNull(form.getCategory()))
                 .addValue("description", blankToNull(form.getDescription()))
-                .addValue("enabled", form.isEnabled());
+                .addValue("enabled", form.isEnabled())
+                .addValue("supervisionApproved", form.isProcessSupervisionApproved());
     }
 
     private static String blankToNull(String value) {
@@ -153,6 +156,7 @@ public class GameService {
                 rs.getString("process_name"),
                 rs.getString("category"),
                 rs.getString("description"),
-                rs.getBoolean("enabled"));
+                rs.getBoolean("enabled"),
+                rs.getBoolean("process_supervision_approved"));
     }
 }

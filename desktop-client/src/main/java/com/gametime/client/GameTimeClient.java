@@ -228,7 +228,8 @@ public class GameTimeClient extends Application {
         ClientState current = state;
         boolean canLaunch = current != null && current.canLaunch();
         GameView selected = gameList.getSelectionModel().getSelectedItem();
-        playButton.setDisable(!canLaunch || selected == null || !selected.enabled());
+        playButton.setDisable(!canLaunch || selected == null || !selected.enabled()
+                || !selected.processSupervisionApproved());
         editGameButton.setDisable(selected == null);
     }
 

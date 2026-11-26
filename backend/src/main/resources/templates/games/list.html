@@ -16,7 +16,7 @@
         <div class="table-wrap" th:unless="${#lists.isEmpty(games)}">
             <table>
                 <thead>
-                <tr><th>Juego</th><th>Launcher</th><th>Proceso</th><th>Categoría</th><th>Estado</th><th></th></tr>
+                <tr><th>Juego</th><th>Launcher</th><th>Proceso</th><th>Categoría</th><th>Disponibilidad</th><th>Supervisión</th><th></th></tr>
                 </thead>
                 <tbody>
                 <tr th:each="g : ${games}">
@@ -27,6 +27,10 @@
                     <td>
                         <span class="badge ACTIVE" th:if="${g.enabled()}">Activo</span>
                         <span class="badge off" th:unless="${g.enabled()}">Desactivado</span>
+                    </td>
+                    <td>
+                        <span class="badge ACTIVE" th:if="${g.processSupervisionApproved()}">Aprobado</span>
+                        <span class="badge off" th:unless="${g.processSupervisionApproved()}">Pendiente</span>
                     </td>
                     <td><a th:href="@{/games/{id}/edit(id=${g.id()})}">Editar</a></td>
                 </tr>

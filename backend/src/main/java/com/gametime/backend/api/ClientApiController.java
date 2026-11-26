@@ -56,7 +56,8 @@ public class ClientApiController {
         boolean pending = request.map(SessionRequest::pending).orElse(false);
 
         List<GameView> gameViews = games.findAll().stream()
-                .map(g -> new GameView(g.id(), g.name(), g.launcher().getLabel(), g.category(), g.enabled()))
+                .map(g -> new GameView(g.id(), g.name(), g.launcher().getLabel(), g.category(), g.enabled(),
+                        g.processSupervisionApproved()))
                 .toList();
 
         return new ClientState(
@@ -137,7 +138,8 @@ public class ClientApiController {
             Integer closeInSeconds) {
     }
 
-    public record GameView(long id, String name, String launcher, String category, boolean enabled) {
+    public record GameView(long id, String name, String launcher, String category, boolean enabled,
+            boolean processSupervisionApproved) {
     }
 
     public record RequestView(long id, String status, String decisionNote) {
