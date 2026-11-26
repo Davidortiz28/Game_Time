@@ -58,13 +58,19 @@ El control de estos juegos se probará cuando el programa esté listo. El soport
 
 ## Ejecutar la base de datos en desarrollo
 
-Requisitos locales: JDK 25, Maven y Docker. Desde la raíz del repositorio, crea el archivo local de variables y completa sus contraseñas:
+Requisitos locales: JDK 25, Maven y Docker. Desde la raíz del repositorio, crea el archivo local de variables y completa sus contraseñas y el token del cliente:
 
     Copy-Item .env.example .env
 
 Después ejecuta:
 
     docker compose up -d
+
+Genera un token aleatorio de 32 bytes para que el cliente JavaFX se autentique ante la API local. En PowerShell:
+
+    [Convert]::ToHexString([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+
+Copia el resultado en `CLIENT_API_TOKEN` dentro de `.env`. El mismo valor lo usan el backend y el cliente; no lo publiques ni lo envíes a GitHub.
 
 La primera vez, abre PowerShell con **Ejecutar como administrador** y crea la cuenta GameTime (la contraseña se solicita de forma oculta):
 
@@ -86,4 +92,8 @@ Para restablecer la contraseña olvidada, detén primero el backend y, desde Pow
 
 La herramienta exige permisos de administrador de Windows y conserva los datos. El inicio de sesión del panel usa una sola cuenta `admin`, hash Argon2id, demora progresiva tras errores, cookie HttpOnly y SameSite, protección CSRF, 15 minutos de inactividad y 8 horas de duración máxima.
 
-Flyway aplica las migraciones automáticamente; crean el catálogo de juegos, sesiones, solicitudes de tiempo adicional y la cuenta administradora. El acceso de administrador ya está protegido. Todavía no están implementadas las pantallas de gestión, los temporizadores ni el control de juegos.
+Flyway aplica las migraciones automáticamente; crean el catálogo de juegos, sesiones, solicitudes de tiempo adicional y la cuenta administradora. El panel web permite al administrador gestionar sesiones y juegos. El cliente JavaFX muestra la biblioteca, permite al jugador agregar y editar juegos, iniciar juegos durante una sesión autorizada y solicitar tiempo adicional. El jugador no tiene una operación de borrado en la API; esa acción queda en el panel del administrador.
+
+El cliente se conecta con `CLIENT_API_TOKEN`, autenticado como rol limitado `CLIENT`. La API no expone las decisiones administrativas de crear, iniciar, terminar o aprobar sesiones a ese rol. El token debe tener al menos 32 caracteres; usa un valor aleatorio distinto por equipo y guárdalo solo en `.env`.
+
+La supervisión del cliente JavaFX funciona mientras el proceso del cliente esté ejecutándose. La instalación como servicio de Windows todavía está pendiente de implementación y validación; consulta [Serviciosistemawindows.md](Serviciosistemawindows.md) para el diseño previsto.

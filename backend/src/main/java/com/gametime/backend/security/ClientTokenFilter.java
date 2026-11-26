@@ -18,8 +18,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * Autentica al cliente del jugador con un token compartido. El token solo concede el rol CLIENT,
- * que permite acciones de jugador: nunca crea, inicia ni termina sesiones.
+ * Autentica al cliente del jugador con un token compartido. El token concede el rol CLIENT para
+ * gestionar la biblioteca, iniciar juegos autorizados y solicitar sesiones; no da acceso al panel
+ * ni a las decisiones administrativas sobre sesiones.
  */
 final class ClientTokenFilter extends OncePerRequestFilter {
 
