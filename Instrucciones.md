@@ -27,7 +27,7 @@ Este documento registra los acuerdos de la primera versión y los asuntos pendie
 
 ### Fallos e interrupciones
 
-Si el equipo se reinicia o falla la supervisión, la sesión se marcará como **interrumpida**. La política para reanudarla o exigir otra sesión queda por definir.
+Si el equipo se reinicia o falla la supervisión, la sesión se marcará como **interrumpida** y no se reanudará automáticamente. El jugador podrá solicitar otra; el administrador tendrá que crear e iniciar una sesión nueva.
 
 ### Juegos para pruebas
 
@@ -78,7 +78,7 @@ La primera implementación incluye el formulario web, protección de rutas, lím
 
 1. Resolver el caso donde el juego ignora el cierre normal y queda abierto sin una nueva sesión aprobada.
 2. Validar el flujo de autenticación en Windows con base de datos iniciada y cuenta creada.
-3. Definir qué ocurre con una sesión marcada como interrumpida.
+3. Revisar la recuperación de una sesión interrumpida cuando se implemente el servicio supervisor.
 4. Revisar el flujo de aprobación y descarga del CSV en el equipo.
 5. Validar el servicio Java y sus permisos.
 6. Acordar criterios de aceptación para los flujos principales.

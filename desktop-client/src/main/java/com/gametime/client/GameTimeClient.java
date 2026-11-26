@@ -470,7 +470,7 @@ public class GameTimeClient extends Application {
             case "GRACE" -> "Se acabó el tiempo. Guarda tu partida.";
             case "ADMIN_ENDED" -> "El administrador terminó la sesión.";
             case "COMPLETED" -> "La sesión terminó. Para seguir jugando, solicita otra.";
-            case "INTERRUPTED" -> "La sesión se interrumpió. Habla con el administrador.";
+            case "INTERRUPTED" -> "La sesión se interrumpió y no se reanuda. Puedes solicitar otra; el administrador debe crearla e iniciarla.";
             default -> session.statusLabel();
         };
     }

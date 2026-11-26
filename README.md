@@ -34,7 +34,7 @@ Para escalar en el futuro se puede alojar PostgreSQL/pgvector en un servidor. Ca
 
 ## Fallos de sesión
 
-Si el equipo se reinicia o falla la supervisión durante una sesión, GameTime marcará la sesión como **interrumpida**. La política de recuperación o reanudación queda pendiente.
+Si el equipo se reinicia o falla la supervisión durante una sesión, GameTime marcará la sesión como **interrumpida**. Esa sesión no se reanuda automáticamente: el jugador puede solicitar otra y el administrador debe crear e iniciar una nueva.
 
 ## IA y RAG
 
@@ -53,7 +53,7 @@ El control de estos juegos se probará cuando el programa esté listo. El soport
 - Resolver qué pasa si un juego sigue abierto tras no responder al cierre normal.
 - Implementar la autenticación inicial y recuperación del administrador según la política de [Instrucciones.md](Instrucciones.md).
 - Revisar el flujo CSV de aprobación con el administrador.
-- Definir qué ocurre con una sesión marcada como interrumpida.
+- Revisar la recuperación de una sesión interrumpida con el servicio supervisor.
 - Validar el servicio Java y sus permisos.
 
 ## Ejecutar la base de datos en desarrollo
