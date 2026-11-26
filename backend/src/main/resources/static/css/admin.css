@@ -1,0 +1,87 @@
+:root {
+    color-scheme: dark;
+    --bg: #111827;
+    --panel: #1f2937;
+    --panel-2: #273244;
+    --border: #374151;
+    --text: #f9fafb;
+    --muted: #9ca3af;
+    --accent: #34d399;
+    --accent-ink: #052e1f;
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --danger-ink: #3b0a0a;
+    font-family: system-ui, "Segoe UI", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--text); line-height: 1.5; }
+
+header.top {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 2rem;
+    padding: .9rem clamp(1rem, 4vw, 2.5rem); border-bottom: 1px solid var(--border); background: var(--panel);
+}
+header.top .brand { font-weight: 700; font-size: 1.15rem; letter-spacing: .02em; }
+header.top nav { display: flex; gap: 1.25rem; flex: 1; }
+header.top nav a { color: var(--muted); text-decoration: none; }
+header.top nav a.active, header.top nav a:hover { color: var(--text); }
+header.top form { margin: 0; }
+
+main { max-width: 1040px; margin: 0 auto; padding: 1.5rem clamp(1rem, 4vw, 2.5rem) 4rem; }
+
+h1 { font-size: 1.6rem; margin: .5rem 0 1rem; }
+h2 { font-size: 1.15rem; margin: 0 0 .75rem; }
+p { margin: .4rem 0; }
+.muted { color: var(--muted); }
+.small { font-size: .875rem; }
+
+.grid { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.panel { padding: 1.25rem 1.4rem; border: 1px solid var(--border); border-radius: .9rem; background: var(--panel); }
+.panel + .panel { margin-top: 1.25rem; }
+.grid .panel + .panel { margin-top: 0; }
+
+.flash { padding: .75rem 1rem; border-radius: .6rem; margin-bottom: 1rem; }
+.flash.notice { background: #064e3b; color: #d1fae5; }
+.flash.error { background: #7f1d1d; color: #fee2e2; }
+
+.badge { display: inline-block; padding: .15rem .55rem; border-radius: 999px; font-size: .8rem; background: var(--panel-2); border: 1px solid var(--border); }
+.badge.ACTIVE { background: #064e3b; border-color: #047857; }
+.badge.GRACE, .badge.PENDING { background: #78350f; border-color: #b45309; }
+.badge.INTERRUPTED, .badge.REJECTED { background: #7f1d1d; border-color: #b91c1c; }
+.badge.off { color: var(--muted); }
+
+.countdown { font-variant-numeric: tabular-nums; font-size: 3rem; font-weight: 700; letter-spacing: .02em; margin: .25rem 0; }
+.countdown.grace { color: var(--warn); }
+
+label { display: block; margin: .9rem 0 .3rem; font-weight: 500; }
+label.inline { display: flex; gap: .5rem; align-items: center; font-weight: 400; margin: .75rem 0; }
+input[type=text], input[type=number], select, textarea {
+    width: 100%; padding: .6rem .7rem; border: 1px solid #4b5563; border-radius: .5rem;
+    background: var(--bg); color: var(--text); font: inherit;
+}
+textarea { min-height: 5rem; resize: vertical; }
+.field-error { color: var(--danger); font-size: .875rem; margin-top: .25rem; }
+.hint { color: var(--muted); font-size: .85rem; margin-top: .25rem; }
+
+.row { display: flex; flex-wrap: wrap; gap: .75rem; align-items: end; }
+.row > * { margin: 0; }
+.row .grow { flex: 1; min-width: 140px; }
+
+button, .button {
+    display: inline-block; padding: .6rem 1rem; border: 1px solid var(--border); border-radius: .5rem;
+    background: var(--panel-2); color: var(--text); font: inherit; cursor: pointer; text-decoration: none;
+}
+button.primary, .button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+button.danger { background: var(--danger); border-color: var(--danger); color: var(--danger-ink); font-weight: 600; }
+button:hover, .button:hover { filter: brightness(1.1); }
+.actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1rem; }
+
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: .6rem .5rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { color: var(--muted); font-weight: 500; font-size: .85rem; }
+.table-wrap { overflow-x: auto; }
+
+details summary { cursor: pointer; color: var(--muted); }
+ul.plain { list-style: none; padding: 0; margin: .5rem 0 0; }
+ul.plain li { padding: .3rem 0; border-bottom: 1px dashed var(--border); }

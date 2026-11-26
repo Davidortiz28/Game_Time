@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Historial')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header('history')}"></header>
+<main>
+    <h1>Historial de sesiones</h1>
+    <p class="muted" th:if="${#lists.isEmpty(sessions)}">Todavía no hay sesiones.</p>
+
+    <section class="panel" th:each="s : ${sessions}">
+        <p>
+            <span class="badge" th:classappend="${s.status().name()}" th:text="${s.status().label}">estado</span>
+            <strong th:text="${#temporals.format(s.createdAt(), 'dd/MM/yyyy HH:mm')}">fecha</strong>
+            <span class="muted small" th:text="'· ' + ${s.durationMinutes()} + ' min planeados'">duración</span>
+        </p>
+        <p class="muted small">
+            <span th:if="${s.startedAt() != null}" th:text="'Inicio: ' + ${#temporals.format(s.startedAt(), 'HH:mm:ss')}">inicio</span>
+            <span th:if="${s.endedAt() != null}" th:text="' · Fin: ' + ${#temporals.format(s.endedAt(), 'HH:mm:ss')}">fin</span>
+            <span th:if="${s.endReason() != null}" th:text="' · ' + ${s.endReasonLabel()}">motivo</span>
+        </p>
+        <ul class="plain small" th:if="${launches.containsKey(s.id())}">
+            <li th:each="l : ${launches.get(s.id())}">
+                <strong th:text="${l.gameName()}">Juego</strong>
+                · iniciado <span th:text="${#temporals.format(l.launchedAt(), 'HH:mm')}">hora</span>
+                <span th:if="${l.finishedAt() != null}" th:text="'· terminó ' + ${#temporals.format(l.finishedAt(), 'HH:mm')}">fin</span>
+                · <span class="muted" th:text="${l.outcomeLabel()}">resultado</span>
+            </li>
+        </ul>
+        <p class="muted small" th:unless="${launches.containsKey(s.id())}">No se iniciaron juegos.</p>
+    </section>
+</main>
+</body>
+</html>

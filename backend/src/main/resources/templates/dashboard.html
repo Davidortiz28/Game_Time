@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Sesión')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header('dashboard')}"></header>
+<main>
+    <div th:replace="~{fragments/layout :: flash}"></div>
+
+    <div class="grid">
+        <!-- Sesión actual -->
+        <section class="panel">
+            <h2>Sesión actual</h2>
+
+            <div th:if="${openSession == null}">
+                <p class="muted">No hay ninguna sesión abierta. El jugador no puede iniciar juegos.</p>
+                <p class="muted small" th:if="${enabledGames == 0}">
+                    Aún no hay juegos activos. <a th:href="@{/games/new}">Agrega uno</a> antes de crear la sesión.
+                </p>
+                <form th:action="@{/sessions}" method="post">
+                    <div class="row">
+                        <div class="grow">
+                            <label for="minutes">Duración (minutos)</label>
+                            <input id="minutes" name="minutes" type="number" value="60" required
+                                   th:min="${minMinutes}" th:max="${maxMinutes}">
+                        </div>
+                        <button type="submit" class="primary">Crear sesión</button>
+                    </div>
+                </form>
+            </div>
+
+            <div th:if="${openSession != null}" th:with="s=${openSession}">
+                <p>
+                    <span class="badge" th:classappend="${s.status().name()}" th:text="${s.status().label}">Estado</span>
+                    <span class="muted small" th:text="'Duración: ' + ${s.durationMinutes()} + ' min'">Duración</span>
+                </p>
+
+                <th:block th:if="${s.status().name() == 'CREATED'}">
+                    <p class="muted">El temporizador empezará a contar cuando lo inicies.</p>
+                    <form th:action="@{/sessions/{id}/start(id=${s.id()})}" method="post" class="actions">
+                        <button type="submit" class="primary">Iniciar temporizador</button>
+                    </form>
+                </th:block>
+
+                <th:block th:if="${s.status().name() == 'ACTIVE'}">
+                    <div class="countdown" data-countdown th:attr="data-seconds=${s.remainingSeconds()}">--:--</div>
+                    <p class="muted small" th:text="'Termina a las ' + ${#temporals.format(s.expiresAt(), 'HH:mm:ss')}">Termina</p>
+                </th:block>
+
+                <th:block th:if="${s.status().name() == 'GRACE'}">
+                    <div class="countdown grace" data-countdown th:attr="data-seconds=${s.closeInSeconds()}">--:--</div>
+                    <p class="muted small">Gracia para guardar. Después se pedirá el cierre normal del juego.</p>
+                </th:block>
+
+                <div th:if="${!#lists.isEmpty(openLaunches)}">
+                    <p class="muted small">Juegos iniciados en esta sesión:</p>
+                    <ul class="plain small">
+                        <li th:each="l : ${openLaunches}">
+                            <strong th:text="${l.gameName()}">Juego</strong>
+                            · <span th:text="${#temporals.format(l.launchedAt(), 'HH:mm')}">hora</span>
+                            · <span class="muted" th:text="${l.outcomeLabel()}">estado</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <form th:action="@{/sessions/{id}/end(id=${s.id()})}" method="post">
+                    <label class="inline">
+                        <input type="checkbox" name="confirm" value="true" required>
+                        <span th:text="${s.status().name() == 'CREATED'} ? 'Confirmo que quiero cancelar esta sesión.' : 'Confirmo que quiero terminar la sesión ahora.'">Confirmo</span>
+                    </label>
+                    <button type="submit" class="danger"
+                            th:text="${s.status().name() == 'CREATED'} ? 'Cancelar sesión' : 'Terminar sesión'">Terminar</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Solicitud del jugador -->
+        <section class="panel">
+            <h2>Solicitud del jugador</h2>
+            <p class="muted" th:if="${pendingRequest == null}">No hay solicitudes pendientes.</p>
+
+            <div th:if="${pendingRequest != null}" th:with="r=${pendingRequest}">
+                <p>
+                    <span class="badge PENDING">Pendiente</span>
+                    <span class="muted small" th:text="'Pedida a las ' + ${#temporals.format(r.requestedAt(), 'HH:mm')}">hora</span>
+                </p>
+                <p class="muted small" th:if="${openSession != null}">
+                    Termina o cancela la sesión abierta antes de aprobar.
+                </p>
+                <form th:action="@{/requests/{id}/approve(id=${r.id()})}" method="post">
+                    <div class="row">
+                        <div class="grow">
+                            <label for="approveMinutes">Duración de la nueva sesión (min)</label>
+                            <input id="approveMinutes" name="minutes" type="number" value="30" required
+                                   th:min="${minMinutes}" th:max="${maxMinutes}">
+                        </div>
+                        <button type="submit" class="primary">Aprobar y crear sesión</button>
+                    </div>
+                </form>
+                <form th:action="@{/requests/{id}/reject(id=${r.id()})}" method="post">
+                    <label for="note">Mensaje para el jugador (opcional)</label>
+                    <input id="note" name="note" type="text" maxlength="500" placeholder="Por hoy es suficiente">
+                    <div class="actions"><button type="submit">Rechazar</button></div>
+                </form>
+            </div>
+        </section>
+    </div>
+
+    <section class="panel">
+        <h2>Últimas sesiones</h2>
+        <p class="muted" th:if="${#lists.isEmpty(recentSessions)}">Todavía no hay sesiones.</p>
+        <div class="table-wrap" th:unless="${#lists.isEmpty(recentSessions)}">
+            <table>
+                <thead><tr><th>Creada</th><th>Duración</th><th>Estado</th><th>Motivo</th></tr></thead>
+                <tbody>
+                <tr th:each="s : ${recentSessions}">
+                    <td th:text="${#temporals.format(s.createdAt(), 'dd/MM HH:mm')}">fecha</td>
+                    <td th:text="${s.durationMinutes()} + ' min'">60 min</td>
+                    <td><span class="badge" th:classappend="${s.status().name()}" th:text="${s.status().label}">estado</span></td>
+                    <td class="muted small" th:text="${s.endReasonLabel()}">motivo</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="small"><a th:href="@{/history}">Ver historial completo</a></p>
+    </section>
+</main>
+
+<script>
+    (function () {
+        const el = document.querySelector('[data-countdown]');
+        const started = Date.now();
+        const fmt = (s) => {
+            const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), r = s % 60;
+            const mm = String(m).padStart(2, '0'), ss = String(r).padStart(2, '0');
+            return h > 0 ? h + ':' + mm + ':' + ss : mm + ':' + ss;
+        };
+        if (el) {
+            const total = parseInt(el.dataset.seconds || '0', 10);
+            const tick = () => {
+                const left = Math.max(0, total - Math.floor((Date.now() - started) / 1000));
+                el.textContent = fmt(left);
+                if (left === 0) { setTimeout(() => location.reload(), 1500); return; }
+                setTimeout(tick, 250);
+            };
+            tick();
+        }
+        // Refresca el estado periódicamente salvo mientras se escribe en un formulario.
+        setInterval(() => {
+            const a = document.activeElement;
+            if (!a || !['INPUT', 'TEXTAREA', 'SELECT'].includes(a.tagName)) { location.reload(); }
+        }, 20000);
+    })();
+</script>
+</body>
+</html>

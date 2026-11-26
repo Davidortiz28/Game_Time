@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${gameId == null} ? 'Agregar juego' : 'Editar juego')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header('games')}"></header>
+<main>
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <h1 th:text="${gameId == null} ? 'Agregar juego' : 'Editar juego'">Juego</h1>
+
+    <section class="panel" th:if="${gameId == null}">
+        <h2>Juegos de prueba</h2>
+        <p class="muted small">Rellena el formulario con los datos habituales. Revisa la dirección con el acceso directo que crea Steam o Epic en tu equipo.</p>
+        <div class="actions">
+            <button type="button" data-preset="l4d2">Left 4 Dead 2</button>
+            <button type="button" data-preset="phasmo">Phasmophobia</button>
+            <button type="button" data-preset="fortnite">Fortnite</button>
+        </div>
+    </section>
+
+    <section class="panel">
+        <form th:object="${game}" method="post"
+              th:action="${gameId == null} ? @{/games} : @{/games/{id}(id=${gameId})}">
+
+            <label for="name">Nombre</label>
+            <input id="name" type="text" th:field="*{name}" maxlength="200" required>
+            <div class="field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+
+            <label for="launcher">Launcher</label>
+            <select id="launcher" th:field="*{launcher}">
+                <option th:each="l : ${launchers}" th:value="${l}" th:text="${l.label}">Steam</option>
+            </select>
+
+            <label for="launchTarget">Cómo se inicia</label>
+            <input id="launchTarget" type="text" th:field="*{launchTarget}" maxlength="1000" required>
+            <div class="hint">
+                Steam: <code>steam://rungameid/550</code> ·
+                Epic: <code>com.epicgames.launcher://apps/Fortnite?action=launch&amp;silent=true</code> ·
+                Ejecutable: ruta completa al <code>.exe</code> o acceso directo <code>.lnk</code>.
+            </div>
+            <div class="field-error" th:if="${#fields.hasErrors('launchTarget')}" th:errors="*{launchTarget}"></div>
+
+            <label for="launchArguments">Argumentos (solo para ejecutables)</label>
+            <input id="launchArguments" type="text" th:field="*{launchArguments}" maxlength="1000">
+            <div class="field-error" th:if="${#fields.hasErrors('launchArguments')}" th:errors="*{launchArguments}"></div>
+
+            <label for="processName">Proceso del juego</label>
+            <input id="processName" type="text" th:field="*{processName}" maxlength="260" required placeholder="left4dead2.exe">
+            <div class="hint">Nombre del .exe que aparece en el Administrador de tareas mientras juegas. GameTime lo vigila y le pide cerrar al terminar el tiempo.</div>
+            <div class="field-error" th:if="${#fields.hasErrors('processName')}" th:errors="*{processName}"></div>
+
+            <label for="category">Categoría (opcional)</label>
+            <input id="category" type="text" th:field="*{category}" maxlength="100" placeholder="Cooperativo, terror, battle royale…">
+            <div class="field-error" th:if="${#fields.hasErrors('category')}" th:errors="*{category}"></div>
+
+            <label for="description">Descripción (opcional)</label>
+            <textarea id="description" th:field="*{description}" maxlength="2000"></textarea>
+            <div class="hint">Más adelante se usará para sugerir categorías con IA.</div>
+            <div class="field-error" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
+
+            <label class="inline">
+                <input type="checkbox" th:field="*{enabled}">
+                Activo (el jugador puede iniciarlo durante una sesión)
+            </label>
+
+            <div class="actions">
+                <button type="submit" class="primary">Guardar</button>
+                <a class="button" th:href="@{/games}">Volver</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="panel" th:if="${gameId != null}">
+        <h2>Eliminar juego</h2>
+        <p class="muted small">El historial conserva el nombre del juego en las sesiones anteriores. Si solo quieres ocultarlo, desactívalo.</p>
+        <form th:action="@{/games/{id}/delete(id=${gameId})}" method="post">
+            <label class="inline">
+                <input type="checkbox" name="confirm" value="true" required>
+                Confirmo que quiero eliminar este juego.
+            </label>
+            <button type="submit" class="danger">Eliminar</button>
+        </form>
+    </section>
+</main>
+
+<script>
+    (function () {
+        const presets = {
+            l4d2: { name: 'Left 4 Dead 2', launcher: 'STEAM', launchTarget: 'steam://rungameid/550',
+                    processName: 'left4dead2.exe', category: 'Cooperativo' },
+            phasmo: { name: 'Phasmophobia', launcher: 'STEAM', launchTarget: 'steam://rungameid/739630',
+                      processName: 'Phasmophobia.exe', category: 'Terror cooperativo' },
+            fortnite: { name: 'Fortnite', launcher: 'EPIC',
+                        launchTarget: 'com.epicgames.launcher://apps/Fortnite?action=launch&silent=true',
+                        processName: 'FortniteClient-Win64-Shipping.exe', category: 'Battle royale' }
+        };
+        document.querySelectorAll('[data-preset]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const p = presets[button.dataset.preset];
+                Object.entries(p).forEach(([field, value]) => { document.getElementById(field).value = value; });
+                document.getElementById('launchArguments').value = '';
+            });
+        });
+    })();
+</script>
+</body>
+</html>

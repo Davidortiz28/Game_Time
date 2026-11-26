@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${title} + ' | GameTime'">GameTime</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+<header th:fragment="header(section)" class="top">
+    <span class="brand">GameTime</span>
+    <nav>
+        <a th:href="@{/}" th:classappend="${section == 'dashboard'} ? 'active'">Sesión</a>
+        <a th:href="@{/games}" th:classappend="${section == 'games'} ? 'active'">Juegos</a>
+        <a th:href="@{/history}" th:classappend="${section == 'history'} ? 'active'">Historial</a>
+    </nav>
+    <form th:action="@{/logout}" method="post">
+        <button type="submit">Cerrar sesión</button>
+    </form>
+</header>
+
+<div th:fragment="flash">
+    <div class="flash notice" th:if="${notice}" th:text="${notice}">Aviso</div>
+    <div class="flash error" th:if="${error}" th:text="${error}">Error</div>
+</div>
+</body>
+</html>

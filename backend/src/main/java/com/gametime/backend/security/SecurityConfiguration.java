@@ -2,8 +2,14 @@ package com.gametime.backend.security;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
+
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -34,7 +40,31 @@ public class SecurityConfiguration {
         return provider;
     }
 
+    /**
+     * API local del cliente del jugador: sin cookies ni CSRF, autenticada con el token de .env.
+     */
     @Bean
+    @Order(1)
+    SecurityFilterChain clientApiSecurityFilterChain(
+            HttpSecurity http,
+            @Value("${gametime.client.token:}") String clientToken) throws Exception {
+        if (clientToken.isBlank() || clientToken.trim().length() < 32) {
+            LOGGER.warn("CLIENT_API_TOKEN no está configurado (mínimo 32 caracteres); el cliente del jugador no podrá conectarse");
+        }
+        http
+                .securityMatcher("/api/client/**")
+                .authorizeHttpRequests(authorize -> authorize.anyRequest().hasRole("CLIENT"))
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(errors -> errors.authenticationEntryPoint(
+                        (request, response, exception) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED)))
+                .addFilterBefore(new ClientTokenFilter(clientToken.trim().length() >= 32 ? clientToken : null),
+                        AnonymousAuthenticationFilter.class);
+        return http.build();
+    }
+
+    @Bean
+    @Order(2)
     SecurityFilterChain adminSecurityFilterChain(
             HttpSecurity http,
             DaoAuthenticationProvider adminAuthenticationProvider,
@@ -42,7 +72,7 @@ public class SecurityConfiguration {
         http
                 .authenticationProvider(adminAuthenticationProvider)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/login", "/error", "/favicon.ico").permitAll()
+                        .requestMatchers("/login", "/error", "/favicon.ico", "/css/**").permitAll()
                         .anyRequest().hasRole("ADMIN"))
                 .formLogin(form -> form
                         .loginPage("/login")

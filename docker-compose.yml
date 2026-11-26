@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: pgvector/pgvector:0.8.7-pg18-bookworm
+    image: pgvector/pgvector:0.8.7-pg18-trixie
     container_name: gametime-postgres
     restart: unless-stopped
     environment:
@@ -11,7 +11,7 @@ services:
     ports:
       - "127.0.0.1:5433:5432"
     volumes:
-      - gametime-postgres-data:/var/lib/postgresql/data
+      - gametime-postgres-data:/var/lib/postgresql
       - ./database/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_ADMIN_USER} -d gametime"]
