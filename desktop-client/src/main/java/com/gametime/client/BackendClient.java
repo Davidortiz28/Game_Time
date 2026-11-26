@@ -167,6 +167,7 @@ final class BackendClient {
             boolean canRequestSession,
             RequestView latestRequest,
             ExportRequestView latestExportRequest,
+            boolean supervisorServiceActive,
             List<GameView> games) {
     }
 

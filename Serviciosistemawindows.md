@@ -126,9 +126,34 @@ Si el juego no responde después de la gracia, GameTime no lo forzará: permanec
 
 Usa Procrun //US para actualizar configuración y //DS para detener y retirar el servicio. Un instalador debe proteger los datos de sesión y aplicar la política de conservación acordada antes de borrarlos.
 
+## Prototipo del supervisor de GameTime
+
+El módulo `windows-supervisor` incluye `com.gametime.supervisor.GameTimeSupervisorService`, con métodos `start(String[])` y `stop(String[])` para Procrun en modo JVM. El supervisor consulta `/api/client/supervision` cada dos segundos con el token de cliente, sigue los procesos guardados en los lanzamientos de la sesión y, al terminar la sesión, solicita su cierre normal. Nunca usa `taskkill /F`.
+
+La migración Flyway V5 conserva `process_name` como una copia en cada lanzamiento para que el supervisor pueda seguirlo aunque luego se edite o elimine el juego del catálogo.
+
+Para preparar el paquete, desde la raíz del repositorio ejecuta:
+
+    mvn -pl windows-supervisor -am package -DskipTests
+
+El JAR con dependencias queda en `windows-supervisor/target/windows-supervisor-0.1.0-SNAPSHOT.jar`. Copia el JAR a una carpeta protegida, por ejemplo `C:\Program Files\GameTime\Supervisor\`, y crea `C:\ProgramData\GameTime\supervisor.properties` con:
+
+    gametime.server-url=http://127.0.0.1:8080
+    gametime.client-token=EL_MISMO_TOKEN_ALEATORIO_CONFIGURADO_EN_ENV
+
+Restringe la lectura de ese archivo a la cuenta del servicio y a los administradores de Windows. El token autoriza acciones del rol CLIENT, así que no uses el de administrador de GameTime ni lo incluyas en argumentos visibles de proceso.
+
+Como administrador de Windows, el registro de Procrun JVM sigue esta forma; sustituye `prunsrv.exe` por el binario de la arquitectura instalada:
+
+    & 'C:\Program Files\GameTime\Supervisor\prunsrv.exe' //IS//GameTimeSupervisor --Install='C:\Program Files\GameTime\Supervisor\prunsrv.exe' --DisplayName='GameTime Session Supervisor' --Startup=auto --StartMode=jvm --Jvm=auto --Classpath='C:\Program Files\GameTime\Supervisor\windows-supervisor-0.1.0-SNAPSHOT.jar' --StartClass=com.gametime.supervisor.GameTimeSupervisorService --StartMethod=start --StartParams='C:\ProgramData\GameTime\supervisor.properties' --StopMode=jvm --StopClass=com.gametime.supervisor.GameTimeSupervisorService --StopMethod=stop --StopParams='C:\ProgramData\GameTime\supervisor.properties' --LogPath='C:\ProgramData\GameTime\logs' --LogPrefix=gametime-supervisor
+
+Procrun llama a `start` y espera hasta que `stop` libere el proceso, según la [documentación de Apache Procrun](https://commons.apache.org/proper/commons-daemon/procrun.html). Aún se debe decidir y probar la cuenta de servicio con los permisos mínimos necesarios para ver y cerrar normalmente los procesos del jugador. No se debe registrar con `LocalSystem` sin validar primero ese requisito.
+
+El cliente JavaFX sigue presentando los avisos en el escritorio. Cuando detecta que el servicio ha reportado actividad recientemente, deja que el servicio envíe la solicitud de cierre para evitar duplicarla. El servicio no muestra ventanas y tampoco garantiza que un juego obedezca el cierre normal. El módulo está preparado, pero no se ha compilado, instalado ni validado en este equipo.
+
 ## Decisión actual
 
-El backend será Java/Spring Boot con PostgreSQL y pgvector. No se agregará .NET por ahora. El servicio supervisor local es un objetivo de diseño para mantener la sesión activa hasta que el administrador la termine. Su implementación Java, comunicación con el agente y permisos siguen pendientes de validación. El backend del servidor y el supervisor de juegos local cumplen funciones distintas.
+El backend será Java/Spring Boot con PostgreSQL y pgvector. No se agregará .NET por ahora. El backend y el supervisor local son procesos distintos: el backend conserva el temporizador y los datos; el supervisor de Windows vigila los juegos aunque se cierre la ventana JavaFX.
 
 
 

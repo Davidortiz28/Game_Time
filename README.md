@@ -26,7 +26,7 @@ El administrador de GameTime configura límites, gestiona sesiones y puede borra
 - **Página de administración:** web local con Spring Boot y Thymeleaf.
 - **Backend:** Java con Spring Boot para autenticación, permisos, sesiones y comunicación entre componentes.
 - **Cliente del jugador:** aplicación JavaFX para Windows que inicia juegos, presenta avisos y comunica el estado.
-- **Supervisor de Windows:** componente Java separado; Apache Commons Daemon Procrun es una opción que debe probarse para ejecutarlo como servicio.
+- **Supervisor de Windows:** módulo Java independiente en `windows-supervisor`, preparado para Apache Commons Daemon Procrun. Puede mantener la supervisión de procesos cuando se cierre la ventana JavaFX; el empaquetado e instalación como servicio aún requieren validación en Windows.
 - **Base de datos:** PostgreSQL con pgvector, ejecutado localmente mediante Docker durante el desarrollo.
 - **Procesamiento asíncrono:** tareas para indexar metadatos y generar embeddings. El cliente local no se conectará directamente a la base de datos.
 
@@ -96,4 +96,4 @@ Flyway aplica las migraciones automáticamente; crean el catálogo de juegos, se
 
 El cliente se conecta con `CLIENT_API_TOKEN`, autenticado como rol limitado `CLIENT`. La API no expone las decisiones administrativas de crear, iniciar, terminar o aprobar sesiones a ese rol. El token debe tener al menos 32 caracteres; usa un valor aleatorio distinto por equipo y guárdalo solo en `.env`.
 
-La supervisión del cliente JavaFX funciona mientras el proceso del cliente esté ejecutándose. La instalación como servicio de Windows todavía está pendiente de implementación y validación; consulta [Serviciosistemawindows.md](Serviciosistemawindows.md) para el diseño previsto.
+La supervisión integrada en JavaFX funciona mientras el cliente esté ejecutándose. El módulo `windows-supervisor` contiene el proceso separado para Procrun; todavía no está instalado ni validado como servicio. Consulta [Serviciosistemawindows.md](Serviciosistemawindows.md) para configurar y probar el prototipo.

@@ -127,7 +127,7 @@ final class SessionSupervisor {
             state = backend.heartbeat();
         } catch (BackendException exception) {
             listener.onConnectionProblem(exception.getMessage());
-            superviseGames(null);
+            superviseGames(null, false);
             return;
         } catch (RuntimeException exception) {
             listener.onConnectionProblem("Error inesperado: " + exception.getMessage());
@@ -136,7 +136,7 @@ final class SessionSupervisor {
         lastState = state;
         listener.onState(state);
         emitWarnings(state.session());
-        superviseGames(state.session());
+        superviseGames(state.session(), state.supervisorServiceActive());
     }
 
     private void emitWarnings(SessionView session) {
@@ -182,7 +182,7 @@ final class SessionSupervisor {
         }
     }
 
-    private void superviseGames(SessionView session) {
+    private void superviseGames(SessionView session, boolean serviceOwnsClose) {
         boolean closeTime = session != null
                 && ("COMPLETED".equals(session.status()) || "ADMIN_ENDED".equals(session.status()))
                 && session.closeInSeconds() != null && session.closeInSeconds() == 0;
@@ -208,7 +208,7 @@ final class SessionSupervisor {
                 continue;
             }
 
-            if (closeTime && running && game.closeRequestedAt == null) {
+            if (!serviceOwnsClose && closeTime && running && game.closeRequestedAt == null) {
                 game.closeRequestedAt = now;
                 GameProcesses.requestClose(game.ticket.processName());
                 listener.onInfo("Pidiendo a " + game.ticket.gameName() + " que se cierre…");

@@ -121,6 +121,17 @@ public class SessionService {
                 .list();
     }
 
+    public List<SupervisorLaunch> launchesForSupervisor(UUID sessionId) {
+        return jdbc.sql("""
+                        SELECT id, process_name, outcome
+                        FROM game_launches WHERE session_id = :session ORDER BY launched_at
+                        """)
+                .param("session", sessionId)
+                .query((rs, row) -> new SupervisorLaunch(
+                        rs.getLong("id"), rs.getString("process_name"), rs.getString("outcome")))
+                .list();
+    }
+
     public Map<UUID, List<GameLaunch>> launchesBySession(List<UUID> sessionIds) {
         if (sessionIds.isEmpty()) {
             return Map.of();
@@ -298,12 +309,13 @@ public class SessionService {
                 .orElseThrow(() -> new BusinessRuleException("El juego no existe o está desactivado."));
 
         long launchId = jdbc.sql("""
-                        INSERT INTO game_launches (session_id, game_id, game_name)
-                        VALUES (:session, :game, :name) RETURNING id
+                        INSERT INTO game_launches (session_id, game_id, game_name, process_name)
+                        VALUES (:session, :game, :name, :process) RETURNING id
                         """)
                 .param("session", session.get())
                 .param("game", game.id())
                 .param("name", game.name())
+                .param("process", game.processName())
                 .query(Long.class)
                 .single();
         LOGGER.info("Inicio autorizado: {}", game.name());

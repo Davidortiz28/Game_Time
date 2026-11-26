@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -33,11 +34,14 @@ public class ClientApiController {
     private final SessionService sessions;
     private final GameService games;
     private final ExportService exports;
+    private final SupervisorPresenceService supervisorPresence;
 
-    public ClientApiController(SessionService sessions, GameService games, ExportService exports) {
+    public ClientApiController(SessionService sessions, GameService games, ExportService exports,
+            SupervisorPresenceService supervisorPresence) {
         this.sessions = sessions;
         this.games = games;
         this.exports = exports;
+        this.supervisorPresence = supervisorPresence;
     }
 
     /** Señal de vida del cliente; devuelve el estado que debe mostrar. */
@@ -61,6 +65,7 @@ public class ClientApiController {
                 !open && !pending,
                 request.map(r -> new RequestView(r.id(), r.status(), r.decisionNote())).orElse(null),
                 exports.findLatest().orElse(null),
+                supervisorPresence.isActive(),
                 gameViews);
     }
 
@@ -87,6 +92,17 @@ public class ClientApiController {
         return new RequestView(request.id(), request.status(), request.decisionNote());
     }
 
+    /** Estado mínimo que necesita el servicio de Windows para supervisar juegos sin JavaFX. */
+    @GetMapping("/supervision")
+    public SupervisorSnapshotView supervision() {
+        supervisorPresence.markSeen();
+        sessions.heartbeat();
+        Optional<PlaySession> latest = sessions.findLatest();
+        return new SupervisorSnapshotView(
+                latest.map(ClientApiController::toView).orElse(null),
+                latest.map(session -> sessions.launchesForSupervisor(session.id())).orElse(List.of()));
+    }
+
     @ExceptionHandler(BusinessRuleException.class)
     ResponseEntity<Map<String, String>> rejected(BusinessRuleException exception) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", exception.getMessage()));
@@ -108,6 +124,7 @@ public class ClientApiController {
             boolean canRequestSession,
             RequestView latestRequest,
             ExportRequest latestExportRequest,
+            boolean supervisorServiceActive,
             List<GameView> games) {
     }
 
@@ -130,5 +147,8 @@ public class ClientApiController {
     }
 
     public record OutcomeRequest(LaunchOutcome outcome) {
+    }
+
+    public record SupervisorSnapshotView(SessionView session, List<com.gametime.backend.sessions.SupervisorLaunch> launches) {
     }
 }
