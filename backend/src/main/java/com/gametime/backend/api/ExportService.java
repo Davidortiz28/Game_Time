@@ -36,6 +36,11 @@ public class ExportService {
                 .query(ExportService::map).optional();
     }
 
+    public List<ExportRequest> findRecent(int limit) {
+        return jdbc.sql("SELECT " + COLUMNS + " FROM export_requests ORDER BY requested_at DESC LIMIT :limit")
+                .param("limit", limit).query(ExportService::map).list();
+    }
+
     @Transactional
     public ExportRequest request() {
         try {
