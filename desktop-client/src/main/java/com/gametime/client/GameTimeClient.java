@@ -59,12 +59,15 @@ public class GameTimeClient extends Application {
     private final Label statusLabel = label("Conectando…", 16, "#d1d5db");
     private final Label countdownLabel = label("--:--", 48, "#f9fafb");
     private final Label requestLabel = label("", 13, "#d1d5db");
+    private final Label exportLabel = label("", 13, "#d1d5db");
     private final Label messageLabel = label("", 13, "#fbbf24");
     private final ListView<GameView> gameList = new ListView<>();
     private final Button playButton = new Button("Jugar");
     private final Button requestButton = new Button("Solicitar otra sesión");
     private final Button addGameButton = new Button("Agregar juego");
     private final Button editGameButton = new Button("Editar juego");
+    private final Button exportButton = new Button("Solicitar CSV del historial");
+    private final Button downloadExportButton = new Button("Descargar CSV aprobado");
 
     private Stage stage;
     private SessionSupervisor supervisor;
@@ -73,6 +76,7 @@ public class GameTimeClient extends Application {
 
     private volatile ClientState state;
     private volatile Instant stateReceivedAt = Instant.now();
+    private volatile long downloadedExportId = -1;
 
     @Override
     public void start(Stage primaryStage) {
@@ -139,11 +143,23 @@ public class GameTimeClient extends Application {
             supervisor.requestSession();
         });
 
+        exportButton.setOnAction(event -> {
+            downloadedExportId = -1;
+            exportButton.setDisable(true);
+            supervisor.requestExport();
+        });
+        downloadExportButton.setVisible(false);
+        downloadExportButton.managedProperty().bind(downloadExportButton.visibleProperty());
+        downloadExportButton.setOnAction(event -> downloadApprovedExport());
+
         HBox actions = new HBox(10, playButton, requestButton);
         actions.setAlignment(Pos.CENTER_LEFT);
+        HBox exportActions = new HBox(8, exportButton, downloadExportButton);
+        exportActions.setAlignment(Pos.CENTER_LEFT);
 
         VBox root = new VBox(10, title, statusLabel, countdownLabel, requestLabel,
-                label("Biblioteca", 14, "#9ca3af"), libraryActions, gameList, actions, messageLabel);
+                label("Biblioteca", 14, "#9ca3af"), libraryActions, gameList, actions,
+                label("Exportación de datos", 14, "#9ca3af"), exportActions, exportLabel, messageLabel);
         root.setPadding(new Insets(20));
         root.setStyle(STYLE);
 
@@ -199,6 +215,11 @@ public class GameTimeClient extends Application {
         requestButton.setVisible(newState.canRequestSession());
         requestButton.setDisable(false);
         requestLabel.setText(describe(newState.latestRequest(), session));
+        BackendClient.ExportRequestView export = newState.latestExportRequest();
+        exportButton.setDisable(export != null && ("PENDING".equals(export.status())
+                || ("APPROVED".equals(export.status()) && downloadedExportId != export.id())));
+        downloadExportButton.setVisible(export != null && "APPROVED".equals(export.status()));
+        exportLabel.setText(describeExport(export));
         updateButtons();
         refreshCountdown();
     }
@@ -337,6 +358,55 @@ public class GameTimeClient extends Application {
         Thread worker = new Thread(task, "gametime-game-editor-save");
         worker.setDaemon(true);
         worker.start();
+    }
+
+    private void downloadApprovedExport() {
+        BackendClient.ExportRequestView export = state == null ? null : state.latestExportRequest();
+        if (export == null || !"APPROVED".equals(export.status())) {
+            return;
+        }
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Guardar historial GameTime");
+        chooser.setInitialFileName("gametime-sessions.csv");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivo CSV", "*.csv"));
+        File target = chooser.showSaveDialog(stage);
+        if (target == null) {
+            return;
+        }
+        messageLabel.setText("Descargando historial…");
+        javafx.concurrent.Task<Void> task = new javafx.concurrent.Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                byte[] content = backend.downloadExport(export.id());
+                java.nio.file.Files.write(target.toPath(), content);
+                return null;
+            }
+        };
+        task.setOnSucceeded(event -> {
+            downloadedExportId = export.id();
+            exportButton.setDisable(false);
+            messageLabel.setText("CSV guardado en " + target.getAbsolutePath());
+        });
+        task.setOnFailed(event -> {
+            messageLabel.setText("");
+            showError(task.getException() == null ? "No se pudo guardar el CSV." : task.getException().getMessage());
+        });
+        Thread worker = new Thread(task, "gametime-export-download");
+        worker.setDaemon(true);
+        worker.start();
+    }
+
+    private static String describeExport(BackendClient.ExportRequestView export) {
+        if (export == null) {
+            return "El CSV incluye sesiones y juegos iniciados. El administrador debe autorizar la descarga.";
+        }
+        return switch (export.status()) {
+            case "PENDING" -> "Solicitud enviada. Esperando la aprobación del administrador.";
+            case "APPROVED" -> "Exportación aprobada. Ya puedes guardar el archivo CSV.";
+            case "REJECTED" -> "La solicitud fue rechazada. "
+                    + (export.decisionNote() == null ? "" : export.decisionNote());
+            default -> "";
+        };
     }
 
     private static String safe(String value) {

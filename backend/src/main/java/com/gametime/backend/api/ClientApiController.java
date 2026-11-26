@@ -32,10 +32,12 @@ public class ClientApiController {
 
     private final SessionService sessions;
     private final GameService games;
+    private final ExportService exports;
 
-    public ClientApiController(SessionService sessions, GameService games) {
+    public ClientApiController(SessionService sessions, GameService games, ExportService exports) {
         this.sessions = sessions;
         this.games = games;
+        this.exports = exports;
     }
 
     /** Señal de vida del cliente; devuelve el estado que debe mostrar. */
@@ -58,6 +60,7 @@ public class ClientApiController {
                 active,
                 !open && !pending,
                 request.map(r -> new RequestView(r.id(), r.status(), r.decisionNote())).orElse(null),
+                exports.findLatest().orElse(null),
                 gameViews);
     }
 
@@ -104,6 +107,7 @@ public class ClientApiController {
             boolean canLaunch,
             boolean canRequestSession,
             RequestView latestRequest,
+            ExportRequest latestExportRequest,
             List<GameView> games) {
     }
 

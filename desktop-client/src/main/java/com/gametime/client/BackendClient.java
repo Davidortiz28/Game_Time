@@ -44,6 +44,40 @@ final class BackendClient {
         return post("/api/client/session-requests", null, RequestView.class);
     }
 
+    ExportRequestView requestExport() throws BackendException {
+        return post("/api/client/exports", null, ExportRequestView.class);
+    }
+
+    byte[] downloadExport(long id) throws BackendException {
+        try {
+            HttpRequest request = HttpRequest.newBuilder(URI.create(
+                            config.serverUrl() + "/api/client/exports/" + id + "/download"))
+                    .timeout(Duration.ofSeconds(15))
+                    .header(TOKEN_HEADER, config.token())
+                    .GET()
+                    .build();
+            HttpResponse<byte[]> response = http.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            int status = response.statusCode();
+            if (status == 401) {
+                throw new BackendException("El backend rechazó el token del cliente.");
+            }
+            if (status >= 400) {
+                String body = new String(response.body(), java.nio.charset.StandardCharsets.UTF_8);
+                try {
+                    throw new BackendException(json.readTree(body).path("message").asText("No se pudo descargar el CSV."));
+                } catch (IOException ignored) {
+                    throw new BackendException("No se pudo descargar el CSV.");
+                }
+            }
+            return response.body();
+        } catch (IOException exception) {
+            throw new BackendException("No se pudo descargar el CSV.", exception);
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            throw new BackendException("Descarga interrumpida.", exception);
+        }
+    }
+
     List<GameCatalogView> gameCatalog() throws BackendException {
         try {
             HttpRequest request = HttpRequest.newBuilder(URI.create(config.serverUrl() + "/api/client/games"))
@@ -132,6 +166,7 @@ final class BackendClient {
             boolean canLaunch,
             boolean canRequestSession,
             RequestView latestRequest,
+            ExportRequestView latestExportRequest,
             List<GameView> games) {
     }
 
@@ -165,6 +200,9 @@ final class BackendClient {
     }
 
     record RequestView(long id, String status, String decisionNote) {
+    }
+
+    record ExportRequestView(long id, String status, String decisionNote) {
     }
 
     record LaunchTicket(

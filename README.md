@@ -17,7 +17,7 @@ La aplicación del jugador debe mantenerse en segundo plano hasta que el adminis
 
 ## Roles y datos
 
-El administrador de GameTime configura límites, gestiona sesiones y puede borrar datos. El jugador no puede cambiar límites ni borrar datos. El usuario podrá solicitar la exportación de sus datos en CSV; el administrador deberá aprobarla o rechazarla. Los campos del archivo quedan por definir.
+El administrador de GameTime configura límites, gestiona sesiones y puede borrar datos. El jugador no puede cambiar límites ni borrar datos. El jugador puede solicitar un CSV del historial; el administrador lo aprueba o rechaza antes de que la descarga esté disponible. El archivo incluye sesiones, duración planeada, estado y juegos iniciados, con sus horas y resultado.
 
 **Acceso del administrador para el MVP:** habrá una única cuenta de GameTime, creada durante la instalación o por una herramienta local ejecutada como administrador de Windows; no habrá contraseña predeterminada ni alta abierta desde la web. La contraseña se guardará con Argon2id. El panel local requerirá iniciar sesión y tendrá expiración por inactividad y tiempo máximo; las acciones sensibles pedirán confirmación, sin solicitar la contraseña en cada acción. El restablecimiento requerirá permisos de administrador de Windows y conservará los datos. La autenticación facial y Windows Hello quedan para el futuro. La política completa está en [Instrucciones.md](Instrucciones.md).
 
@@ -52,7 +52,7 @@ El control de estos juegos se probará cuando el programa esté listo. El soport
 
 - Resolver qué pasa si un juego sigue abierto tras no responder al cierre normal.
 - Implementar la autenticación inicial y recuperación del administrador según la política de [Instrucciones.md](Instrucciones.md).
-- Definir los campos y el flujo de aprobación del CSV.
+- Revisar el flujo CSV de aprobación con el administrador.
 - Definir qué ocurre con una sesión marcada como interrumpida.
 - Validar el servicio Java y sus permisos.
 
@@ -92,7 +92,7 @@ Para restablecer la contraseña olvidada, detén primero el backend y, desde Pow
 
 La herramienta exige permisos de administrador de Windows y conserva los datos. El inicio de sesión del panel usa una sola cuenta `admin`, hash Argon2id, demora progresiva tras errores, cookie HttpOnly y SameSite, protección CSRF, 15 minutos de inactividad y 8 horas de duración máxima.
 
-Flyway aplica las migraciones automáticamente; crean el catálogo de juegos, sesiones, solicitudes de tiempo adicional y la cuenta administradora. El panel web permite al administrador gestionar sesiones y juegos. El cliente JavaFX muestra la biblioteca, permite al jugador agregar y editar juegos, iniciar juegos durante una sesión autorizada y solicitar tiempo adicional. El jugador no tiene una operación de borrado en la API; esa acción queda en el panel del administrador.
+Flyway aplica las migraciones automáticamente; crean el catálogo de juegos, sesiones, solicitudes de tiempo adicional, solicitudes de exportación y la cuenta administradora. El panel web permite al administrador gestionar sesiones y juegos, así como aprobar o rechazar exportaciones CSV. El cliente JavaFX muestra la biblioteca, permite al jugador agregar y editar juegos, iniciar juegos durante una sesión autorizada, solicitar tiempo adicional y pedir su historial CSV. El jugador no tiene una operación de borrado en la API; esa acción queda en el panel del administrador. La descarga CSV solo se habilita tras aprobación.
 
 El cliente se conecta con `CLIENT_API_TOKEN`, autenticado como rol limitado `CLIENT`. La API no expone las decisiones administrativas de crear, iniciar, terminar o aprobar sesiones a ese rol. El token debe tener al menos 32 caracteres; usa un valor aleatorio distinto por equipo y guárdalo solo en `.env`.
 

@@ -70,6 +70,8 @@ La primera implementación incluye el formulario web, protección de rutas, lím
 - La IA no establece límites ni permisos.
 - La lista de categorías, el proveedor de embeddings y el modelo quedan para después.
 - El usuario podrá solicitar una exportación CSV, que el administrador aprobará o rechazará.
+- La exportación aprobada contiene una fila por sesión y juego iniciado: identificador y fechas de sesión, duración planeada, estado, motivo de cierre, nombre del juego, fechas de inicio y fin del juego, y resultado.
+- El cliente habilita la descarga únicamente después de la aprobación del administrador.
 - Solo el administrador puede borrar los datos de GameTime.
 
 ## Pendientes
@@ -77,7 +79,7 @@ La primera implementación incluye el formulario web, protección de rutas, lím
 1. Resolver el caso donde el juego ignora el cierre normal y queda abierto sin una nueva sesión aprobada.
 2. Validar el flujo de autenticación en Windows con base de datos iniciada y cuenta creada.
 3. Definir qué ocurre con una sesión marcada como interrumpida.
-4. Definir los campos del CSV y cómo se entrega tras la aprobación.
+4. Revisar el flujo de aprobación y descarga del CSV en el equipo.
 5. Validar el servicio Java y sus permisos.
 6. Acordar criterios de aceptación para los flujos principales.
 

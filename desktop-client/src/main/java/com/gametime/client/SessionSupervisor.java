@@ -109,6 +109,18 @@ final class SessionSupervisor {
         });
     }
 
+    void requestExport() {
+        executor.execute(() -> {
+            try {
+                backend.requestExport();
+                listener.onInfo("Solicitud CSV enviada. El administrador debe aprobarla.");
+                tick();
+            } catch (BackendException exception) {
+                listener.onInfo(exception.getMessage());
+            }
+        });
+    }
+
     private void tick() {
         ClientState state;
         try {

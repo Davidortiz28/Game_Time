@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.gametime.backend.common.BusinessRuleException;
+import com.gametime.backend.api.ExportService;
 import com.gametime.backend.games.GameService;
 import com.gametime.backend.sessions.PlaySession;
 import com.gametime.backend.sessions.SessionService;
@@ -22,10 +23,12 @@ public class DashboardController {
 
     private final SessionService sessions;
     private final GameService games;
+    private final ExportService exports;
 
-    public DashboardController(SessionService sessions, GameService games) {
+    public DashboardController(SessionService sessions, GameService games, ExportService exports) {
         this.sessions = sessions;
         this.games = games;
+        this.exports = exports;
     }
 
     @GetMapping("/")
@@ -39,6 +42,8 @@ public class DashboardController {
                 .map(s -> sessions.launchesBySession(List.of(s.id())).getOrDefault(s.id(), List.of()))
                 .orElse(List.of()));
         model.addAttribute("pendingRequest", sessions.findPendingRequest().orElse(null));
+        model.addAttribute("pendingExportRequest", exports.findPending().orElse(null));
+        model.addAttribute("recentExportRequests", exports.findRecent(5));
         model.addAttribute("recentSessions", recent);
         model.addAttribute("enabledGames", games.findEnabled().size());
         model.addAttribute("minMinutes", SessionService.MIN_MINUTES);
@@ -82,6 +87,22 @@ public class DashboardController {
             @RequestParam(required = false) String note,
             RedirectAttributes flash) {
         return run(flash, () -> sessions.rejectRequest(id, note), "Solicitud rechazada.");
+    }
+
+    @PostMapping("/exports/{id}/approve")
+    public String approveExport(@PathVariable long id,
+            @RequestParam(defaultValue = "false") boolean confirm,
+            RedirectAttributes flash) {
+        return run(flash, () -> exports.approve(id, confirm),
+                "Exportación aprobada. El jugador ya puede descargar el CSV.");
+    }
+
+    @PostMapping("/exports/{id}/reject")
+    public String rejectExport(@PathVariable long id,
+            @RequestParam(defaultValue = "false") boolean confirm,
+            @RequestParam(required = false) String note,
+            RedirectAttributes flash) {
+        return run(flash, () -> exports.reject(id, confirm, note), "Solicitud de exportación rechazada.");
     }
 
     @GetMapping("/history")

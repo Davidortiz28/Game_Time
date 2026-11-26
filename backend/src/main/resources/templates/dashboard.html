@@ -106,6 +106,44 @@
     </div>
 
     <section class="panel">
+        <h2>Exportación del historial</h2>
+        <p class="muted" th:if="${pendingExportRequest == null}">No hay solicitudes CSV pendientes.</p>
+        <div th:if="${pendingExportRequest != null}" th:with="r=${pendingExportRequest}">
+            <p>
+                El jugador solicita exportar sesiones y juegos iniciados.
+                <span class="muted small" th:text="${#temporals.format(r.requestedAt(), 'dd/MM/yyyy HH:mm')}">fecha</span>
+            </p>
+            <form th:action="@{/exports/{id}/approve(id=${r.id()})}" method="post">
+                <label class="inline">
+                    <input type="checkbox" name="confirm" value="true" required>
+                    Confirmo que autorizo la descarga de los datos del historial.
+                </label>
+                <button type="submit" class="primary">Aprobar exportación</button>
+            </form>
+            <form th:action="@{/exports/{id}/reject(id=${r.id()})}" method="post">
+                <label for="exportNote">Mensaje (opcional)</label>
+                <input id="exportNote" name="note" type="text" maxlength="500">
+                <label class="inline">
+                    <input type="checkbox" name="confirm" value="true" required>
+                    Confirmo que quiero rechazar la solicitud.
+                </label>
+                <button type="submit">Rechazar exportación</button>
+            </form>
+        </div>
+
+        <details th:if="${!#lists.isEmpty(recentExportRequests)}">
+            <summary>Solicitudes recientes</summary>
+            <ul class="plain small">
+                <li th:each="r : ${recentExportRequests}">
+                    <span th:text="${#temporals.format(r.requestedAt(), 'dd/MM/yyyy HH:mm')}">fecha</span>
+                    · <strong th:text="${r.status()}">estado</strong>
+                    <span class="muted" th:if="${r.decisionNote() != null}" th:text="'· ' + ${r.decisionNote()}">nota</span>
+                </li>
+            </ul>
+        </details>
+    </section>
+
+    <section class="panel">
         <h2>Últimas sesiones</h2>
         <p class="muted" th:if="${#lists.isEmpty(recentSessions)}">Todavía no hay sesiones.</p>
         <div class="table-wrap" th:unless="${#lists.isEmpty(recentSessions)}">
